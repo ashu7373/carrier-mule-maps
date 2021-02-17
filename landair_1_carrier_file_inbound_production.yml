@@ -1,0 +1,46 @@
+%dw 2.0
+input payload application/csv header = true
+
+output application/json
+
+var headers = payload[0] pluck $$
+
+
+var header_body = [{
+    identifier2: ((headers[0] as String default "") splitBy("-"))[0] default "",
+    identifier1: headers[1] default "",
+    identifier3: headers[2] default "",
+    operatingCarrierScac: headers[3] default "",
+    truckNumber: headers[4] default "",
+    startTime: headers[5] default "",
+    stopTracking: headers[6] default "",
+    latitude: headers[7] default "",
+    longitude: headers[8] default "",
+    locatedAt: headers[9] default "",
+    city: headers[10] default "",
+    state: headers[11] default "",
+    deliveredAt: headers[12] default "",
+    externalId: headers[13] default "",
+}]
+
+var payload_body = payload default [] map {
+    identifier2: (($[0] as String default "") splitBy("-"))[0] default "",
+    identifier1: $[1] default "",
+    identifier3: $[2] default "",
+    operatingCarrierScac: $[3] default "",
+    truckNumber: $[4] default "",
+    startTime: $[5] default "",
+    stopTracking: $[6] default "",
+    latitude: $[7] default "",
+    longitude: $[8] default "",
+    locatedAt: $[9] default "",
+    city: $[10] default "",
+    state: $[11] default "",
+    deliveredAt: $[12] default "",
+    externalId: $[13] default "",
+}
+---
+header_body
+++ 
+payload_body 
+

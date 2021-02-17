@@ -1,0 +1,26 @@
+%dw 2.0
+import java!com::conversion::HtmlToJson
+output application/json
+var data = (read(HtmlToJson::htmlToJson(payload as String),"application/json"))[ 0 to -1]
+
+---
+data default [] map {
+	externalId: lower(trim($."Kundennummer")) default "",
+	identifier1: $."Sendungsreferenz" default "",
+	statusCode: if (($."SE-Status") as String == "27") "AF" 
+	else if (($."SE-Status") as String == "27 01") "X3" 
+	else if (($."SE-Status") as String == "27 09") "AF" 
+	else if (($."SE-Status") as String == "40") "D1" 
+	else if (($."SE-Status") as String == "41") "IO" 
+	else if (($."SE-Status") as String == "42") "IO" 
+	else "" default "",
+	statusDescription: if (($."SE-Status") as String == "27") "Self-pickup" 
+	else if (($."SE-Status") as String == "27 01") "Pickup: Lock storage entrance" 
+	else if (($."SE-Status") as String == "27 09") "Pickup: End of the process" 
+	else if (($."SE-Status") as String == "40") "Complete delivery" 
+	else if (($."SE-Status") as String == "41") "Partial delivery" 
+	else if (($."SE-Status") as String == "42") "Delivery agreement" 
+	else "" default "",
+	eventTimeStamp: ($."SE-Datum" as String) [0 to 3] ++ "-" ++ ($."SE-Datum" as String) [4 to 5] ++ "-" ++ ($."SE-Datum" as String) [6 to 7] 
+	 ++ "T" ++ ($."SE-Zeit" as String) [0 to 1]  ++ ":" ++ ($."SE-Zeit" as String) [2 to 3] ++ ":00"  default ""
+}

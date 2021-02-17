@@ -1,0 +1,22 @@
+%dw 2.0
+output application/json
+---
+payload.LanferTraceEnvelope.*LanferTrace map ( lanferTrace , indexOfLanferTrace ) -> {
+  externalId: lower(lanferTrace.header.to) default "",
+  identifier1: trim(((lanferTrace.geo.cus_order as String) splitBy(/[.\/]/)) [0]) default "",
+  identifier2: trim(((lanferTrace.geo.cus_shipment as String) splitBy(/[.\/]/)) [0]) default "",
+  identifier3: trim(((lanferTrace.geo.cus_order as String) splitBy(/[.\/]/)) [1]) default "",
+  statusCode: if (lanferTrace.sts.status == "1") "X3"
+ 	else if (lanferTrace.sts.status == "2") "AF"
+ 	else if (lanferTrace.sts.status == "3") "X1"
+ 	else if (lanferTrace.sts.status == "4") "D1"
+ 	else "",
+  statusDescription:if (lanferTrace.sts.status == "1") "At Pickup"
+ 	else if (lanferTrace.sts.status == "2") "Departed Pickup"
+ 	else if (lanferTrace.sts.status == "3") "Arrived at Delivery"
+ 	else if (lanferTrace.sts.status == "4") "Delivered"
+ 	else "",
+  Latitude: lanferTrace.geo.lat as String default "",
+  Longitude: lanferTrace.geo.lon as String default "",
+  LocatedAt: lanferTrace.geo.geodate as String default ""
+}

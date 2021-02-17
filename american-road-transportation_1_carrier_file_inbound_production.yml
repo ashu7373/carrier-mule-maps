@@ -1,0 +1,12 @@
+%dw 2.0
+output application/json
+---
+
+payload default [] map {
+
+    externalID: if (lower(trim($."Bill To Name")) contains "calumet") "calumet specialty products partners lp" else lower(trim($."Bill To Name")),
+    truckNumber: trim($."Order Tractors") default "",
+    trailerNumber: trim($."Order Trailers") default "",
+    identifier1: trim($."Order Reference (1)") default ""
+
+}

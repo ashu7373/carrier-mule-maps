@@ -1,0 +1,28 @@
+%dw 2.0
+import * from dw::core::Strings
+input payload application/csv 
+output application/json skipNullOn = "everywhere"
+var headers = payload[0] pluck $$
+
+var header_body =  headers default [] map {
+	a: $ default "" splitBy (";")
+}.a map {
+	externalId: lower(trim($[0])) default "",
+	identifier1: (trim($[1]) default "") ,
+    identifier2: (trim($[4]) default "") ,
+	(pickupTime: trim($[3]) as String default "") if ((trim($[2])) == "LO1"),
+    (deliveryTime: trim($[3]) as String default "") if ((trim($[2])) == "DE1"),
+}
+var csvBody = payload default [] map {
+        a: $[0] default "" splitBy (";")
+}.a map {
+    externalId: lower(trim($[0])) default "",
+	identifier1: (trim($[1]) default "") ,
+    identifier2: (trim($[4]) default "") ,
+	(pickupTime: trim($[3]) as String default "") if ((trim($[2])) == "LO1"),
+    (deliveryTime: trim($[3]) as String default "") if ((trim($[2])) == "DE1")
+}
+---
+header_body
+++
+csvBody

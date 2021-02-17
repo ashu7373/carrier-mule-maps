@@ -1,0 +1,40 @@
+input payload application/xlsx header=false
+output application/json
+//var dataSet = readUrl("classpath://test_771.xlsx", "application/xlsx")
+var data = payload  pluck $
+var payload_data = data[0]
+var current_Datetimestamp = now() >> "CST"
+
+var status_body = payload_data default [] map  {
+	(identifier1: lower(trim($[0])) as String default "") if !(isEmpty(trim($[0]))),
+	(externalId: trim(($[1]) default "")) if !(isEmpty(trim($[1]))),
+    (city: trim(($[6]) default "")) if !(isEmpty(trim($[6]))),
+    (state: trim(($[7]) default "")) if !(isEmpty(trim($[7]))),
+	(eventTimeStamp: if (!(isEmpty(trim($[9])))) trim($[9]) else 
+		 current_Datetimestamp),
+	(statusCode:  if ((lower(($[10])) contains "arrival at delivery") or (lower(($[10])) contains "driver unloading") ) "X1"
+	else if ((lower(($[10])) contains "arrival at pickup") or (lower(($[10])) contains "driver loading")) "X3"
+	else if ((lower(trim($[10])) contains "departure at pickup") or (lower(($[10])) contains "loading complete")) "AF"
+	else if ((lower(trim($[10])) contains "en route to delivery") or (lower(($[10])) contains "loading complete")) "X6"
+		else if ((lower(trim($[10])) contains "completed unloading at delivery") or (lower(trim($[10])) contains "delivered"))"D1"
+	else "IO"),
+	(statusDescription: if (!(isEmpty(trim($[11])))) trim($[11]) else 
+		 trim(($[10]))),
+	(estimatedArrivalAtDestination: if (lower(($[8])) contains "checked") trim($[8])
+	else ""
+	)
+}
+
+var normal_update_body = payload_data default [] map  {
+	(identifier1: lower(trim($[0])) as String default "") if !(isEmpty(trim($[0]))),
+	(externalId: trim(($[1]) default "")) if !(isEmpty(trim($[1]))),
+	(truckNumber: trim(($[2])) default "") if !(isEmpty(trim($[2]))),
+	(trailerNumber: trim(($[3])) default "") if !(isEmpty(trim($[3]))),
+	(driverPhone: trim(($[4])) default "") if !(isEmpty(trim($[4]))) ,
+	(brokeredLoad: trim(($[5])) default "") if !(isEmpty(trim($[5]))) 
+}
+
+---
+status_body filter $ != {}
+++
+normal_update_body filter $ != {}

@@ -1,0 +1,25 @@
+input payload application/csv header = false
+output application/json skipNullOn="everywhere"
+var index = payload [0] pluck $$
+
+var header = if (isEmpty(index)) 0 else index [0] 
+var dataset = payload[header]
+
+var data = dataset default [] map {
+    a: $ default "" splitBy (";")
+}.a map{
+    externalId: lower(trim($[1])) default "",
+    identifier1: trim($[4]) default "",
+    statusCode: if ( trim($[0]) as String contains "10") "XB"   
+                else if  ( trim($[0]) as String contains "20") "AF"
+                else if  ( trim($[0]) as String contains "40") "D1"
+                else "IO",
+    statusDescription: if ( trim($[0]) as String contains "10") "Confirmation of e-oder (shipment arrived correclty in the system)"   
+                else if  ( trim($[0]) as String contains "20") "Dispatched / loaded / in delivery (at 1st disposition)"
+                else if  ( trim($[0]) as String contains "40") "Delivery successfully perfomed (POD)"
+                else "IO",
+    eventTimeStamp: ((trim($[17]) as String)[0 to 9] ++ "T" ++ (trim($[17]) as String)[11 to 12] ++ ":" ++ (trim($[17]) as String)[14 to 15] ++ ":" ++ (trim($[17]) as String)[17 to 18] ++ ".000" default "")   
+}
+---
+
+data

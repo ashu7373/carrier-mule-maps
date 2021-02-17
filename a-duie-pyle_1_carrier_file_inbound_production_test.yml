@@ -1,0 +1,22 @@
+
+output application/json
+//var dataSet = readUrl("classpath://test_d2.xls", "application/xlsx")
+var data = payload pluck $
+var payload_data = data[0]
+
+var status = if (lower(trim(payload_data[12])) != "sech56") "1" else "2"
+
+var payload_body  = payload_data map (x, index) -> {
+	externalId: if (status == "1") lower(trim(x[12])) else lower(trim(x[13])) default "",
+	identifier1: if (status == "1") (trim(x[0])) else (trim(x[1])) default "",
+	identifier2: if (status == "1") (trim(x[2])) else (trim(x[3])) default "",
+	truckNumber: if (status == "1") (trim(x[6])) else (trim(x[7])) default "",
+	latitude: if (status == "1") (trim(x[7])) else (trim(x[8])) default "",
+	longitude: if (status == "1") (trim(x[8])) else (trim(x[9])) default "",
+	city: if (status == "1") (trim(x[9])) else (trim(x[10])) default "",
+	state: if (status == "1") (trim(x[10])) else (trim(x[11])) default "",
+	locatedAt: if (status == "1") (trim(x[11])) else (trim(x[12])) default ""
+	
+}
+---
+payload_body filter $ != {}

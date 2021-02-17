@@ -1,0 +1,28 @@
+input payload application/csv header = false
+output application/json skipNullOn="everywhere"
+var index = payload [0] pluck $$
+
+var header = if (isEmpty(index)) 0 else index [0] 
+var dataset = payload[header]
+
+var data = dataset default [] map {
+    a: $ default "" splitBy (";")
+}.a map{
+    externalId: lower(trim($[0])) default "",
+    identifier1: trim($[1]) default "",
+    truckNumber: trim($[2]) default "",
+    statusCode: if ( trim($[3] default "") as String == "5") "X3"   
+                else if ( trim($[3] default "") as String == "8") "AF" 
+                else if ( trim($[3] default "") as String == "10") "X1" 
+                else if ( trim($[3] default "") as String == "11") "D1" 
+                else if ( trim($[3] default "") as String == "15") "X6" 
+                else if ( trim($[3] default "") as String == "2") "XB" 
+                else if ( trim($[3] default "") as String == "17") "A3" 
+                else if ( trim($[3] default "") as String == "21/21") "CA" 
+                else "IO",
+    statusDescription: trim($[4]) default "",
+    eventTimeStamp: ((trim($[5]) as String ) default "")   
+}
+---
+
+data

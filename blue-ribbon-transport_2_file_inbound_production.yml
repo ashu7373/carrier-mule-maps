@@ -1,0 +1,108 @@
+%dw 2.0
+import * from dw::core::Arrays
+import * from dw::core::Objects
+import * from dw::core::Strings
+import * from dw::Runtime
+output application/json
+
+fun date_time_format(d: LocalDateTime {format: "M/d/yyyy H:mm"}) = d as String {format: "yyyy-MM-dd'T'HH:mm:ss.SSS"}
+
+fun Date_Format(d: LocalDateTime {format: "yyyyMMdd'T'HHmmss"}) = d as String {format: "yyyy-MM-dd'T'HH:mm:ss.SSS"}
+//fun Date_Format1(d:LocalDateTime {format: "yyyyMMdd'T'HHmmss"}) = d as String {format: "yyyy-MM-dd'T'HH:mm:ss.SSS"} >> "CET"
+
+//Locations sent by Carrier
+//var update_details2 = (payload.MercuryGate.MasterBillOfLading.TrackingMessages.*ShipmentStatus default [] map (load, loadIndex) -> {
+//	City: load.StatusDetails.StatusDetail.Location.Address.City,
+//	State: load.StatusDetails.StatusDetail.Location.Address.StateProvince,
+//	LocatedAt: load.StatusDetails.StatusDetail.Date,
+//	(Latitude: (
+//			if(sizeOf(load.StatusDetails.StatusDetail.Location.Address.GeoLoc.@"latDegrees") > 8) ((load.StatusDetails.StatusDetail.Location.Address.GeoLoc.@"latDegrees"[0 to 2]as String) ++"."++(load.StatusDetails.StatusDetail.Location.Address.GeoLoc.@"latDegrees"[3 to 8]as String))
+//			else(load.StatusDetails.StatusDetail.Location.Address.GeoLoc.@"latDegrees"[0 to 1]as String ++"."++(load.StatusDetails.StatusDetail.Location.Address.GeoLoc.@"latDegrees"[2 to 7]as String))
+//			)
+//			)
+//			if(! isEmpty(load.StatusDetails.StatusDetail.Location.Address.GeoLoc.@"latDegrees")),
+//	(Longitude: "-"++(
+//			if(sizeOf(load.StatusDetails.StatusDetail.Location.Address.GeoLoc.@"longDegrees") > 8) ((load.StatusDetails.StatusDetail.Location.Address.GeoLoc.@"longDegrees"[0 to 2]as String) ++"."++(load.StatusDetails.StatusDetail.Location.Address.GeoLoc.@"longDegrees"[3 to 8]as String))
+//			else(load.StatusDetails.StatusDetail.Location.Address.GeoLoc.@"longDegrees"[0 to 1]as String ++"."++(load.StatusDetails.StatusDetail.Location.Address.GeoLoc.@"longDegrees"[2 to 7]as String))
+//			)
+//			)
+//			if(! isEmpty(load.StatusDetails.StatusDetail.Location.Address.GeoLoc.@"longDegrees"))
+//})
+//GeoCodes in call check
+var update_details3 = try(() ->(payload.MercuryGate.MasterBillOfLading.Activities.*Activity default []
+	filter $.@"type" == "Status Check"
+//	or $.@"type" == "Call Check"
+//	or $.@"type" == "Last Location"
+	map (load, loadIndex) -> {
+		(Activity_type: load.@"type") if(! isEmpty(load.Location)),
+		(City: load.Location.Address.City) if(! isEmpty(load.Location)),
+		(State: load.Location.Address.StateProvince) if(! isEmpty(load.Location)),
+		(LocatedAt: (load.CompletedDate)) if(! isEmpty(load.Location)),
+		(Latitude: (
+			if(sizeOf(load.Location.Address.GeoLoc.@"latDegrees") > 8) ((load.Location.Address.GeoLoc.@"latDegrees"[0 to 2]as String) ++"."++(load.Location.Address.GeoLoc.@"latDegrees"[3 to 8]as String))
+			else(load.Location.Address.GeoLoc.@"latDegrees"[0 to 1]as String ++"."++(load.Location.Address.GeoLoc.@"latDegrees"[2 to 7]as String))
+			)
+			)
+			if(! isEmpty(load.Location.Address.GeoLoc.@"longDegrees")),
+		(Longitude: "-"++(
+			if(sizeOf(load.Location.Address.GeoLoc.@"longDegrees") > 8) ((load.Location.Address.GeoLoc.@"longDegrees"[0 to 2]as String) ++"."++(load.Location.Address.GeoLoc.@"longDegrees"[3 to 8]as String))
+			else(load.Location.Address.GeoLoc.@"longDegrees"[0 to 1]as String ++"."++(load.Location.Address.GeoLoc.@"longDegrees"[2 to 7]as String))
+			)
+			)
+			if(! isEmpty(load.Location.Address.GeoLoc.@"longDegrees"))
+}) filter (! isEmpty($))
+) orElse {}
+
+//MacroPoint Updates
+//var update_details4 = (payload.MercuryGate.MasterBillOfLading.Activities.*Activity default []
+//	filter $.@"type" == "Status Check"
+//	or $.@"type" == "Call Check"
+//	or $.@"type" == "Last Location"
+//	map (load, loadIndex) -> {
+//		Activity_type: load.@"type",
+//		City: load.Location.Address.City,
+//		State: load.Location.Address.StateProvince,
+//		(LocatedAt: load.CompletedDate) if(! isEmpty(load.CompletedDate)),
+//		(Latitude: (
+//			if(sizeOf(load.Location.Address.GeoLoc.@"latDegrees") > 8) ((load.Location.Address.GeoLoc.@"latDegrees"[0 to 2]as String) ++"."++(load.Location.Address.GeoLoc.@"latDegrees"[3 to 8]as String))
+//			else(load.Location.Address.GeoLoc.@"latDegrees"[0 to 1]as String ++"."++(load.Location.Address.GeoLoc.@"latDegrees"[2 to 7]as String))
+//			)
+//			)
+//			if(! isEmpty(load.Location.Address.GeoLoc.@"longDegrees")),
+//		(Longitude: "-"++(
+//			if(sizeOf(load.Location.Address.GeoLoc.@"longDegrees") > 8) ((load.Location.Address.GeoLoc.@"longDegrees"[0 to 2]as String) ++"."++(load.Location.Address.GeoLoc.@"longDegrees"[3 to 8]as String))
+//			else(load.Location.Address.GeoLoc.@"longDegrees"[0 to 1]as String ++"."++(load.Location.Address.GeoLoc.@"longDegrees"[2 to 7]as String))
+//			)
+//			)
+//			if(! isEmpty(load.Location.Address.GeoLoc.@"longDegrees"))
+//})
+
+
+var final_update_details = try(() ->(update_details3 maxBy $.LocatedAt)) orElse {}
+
+
+var update_details = try(() ->(payload.MercuryGate.*MasterBillOfLading default [] map (load, loadIndex) -> {
+	externalId: load.Shipments.Shipment.Enterprise.@name,
+	identifier1: (load.ReferenceNumbers.*ReferenceNumber filter $.@"type" == "Customer Reference Number")[0],
+	identifier2: (load.ReferenceNumbers.*ReferenceNumber filter $.@"type" == "Primary Customer Reference Number")[0],
+	identifier3: (load.ReferenceNumbers.*ReferenceNumber filter $.@"type" == "Pickup Number")[0],
+	identifier4: (load.ReferenceNumbers.*ReferenceNumber filter $.@"type" == "EDI Import Primary Reference")[0],
+	operatingCarrierScac: load.Carriers.Carrier.SCAC,
+//	(driverPhone: (load.ReferenceNumbers.*ReferenceNumber filter $.@"type" == "Driver Phone Number")[0]) if(! isEmpty(load.ReferenceNumbers.*ReferenceNumber filter $.@"type" == "Driver Phone Number")),
+	Status: load.Status,
+	trailerNumber: (load.ReferenceNumbers.*ReferenceNumber filter $.@"type" == "Trailer Number")[0],
+	truckNumber: (load.ReferenceNumbers.*ReferenceNumber filter $.@"type" == "Tractor Number")[0],
+	//pickupTime: "FIX",
+	(deliveredAt: date_time_format((((load.Plan.Events.*Event filter $.@"type" == "Drop").*TrackingMessages.*ShipmentStatus.*StatusDetails.*StatusDetail filter $.StatusCode == "D1").Date filter $.@"type" == "actual")[0] default ""))
+		if(! isEmpty((((load.Plan.Events.*Event filter $.@"type" == "Drop").*TrackingMessages.*ShipmentStatus.*StatusDetails.*StatusDetail filter $.StatusCode == "D1").Date filter $.@"type" == "actual"))),	//tags: "FIX",
+	//tags: "FIX",
+	//estimatedArrivalAtDestination: "FIX",
+	(City: final_update_details.City) if(! isEmpty(final_update_details.City)),
+	(State: final_update_details.State) if(! isEmpty(final_update_details.State)),
+	(LocatedAt: date_time_format(final_update_details.LocatedAt)) if(! isEmpty(final_update_details.LocatedAt)),
+	(Latitude: final_update_details.Latitude) if(! isEmpty(final_update_details.Latitude)),
+	(Longitude: final_update_details.Longitude) if(! isEmpty(final_update_details.Longitude))
+}) ) orElse {}
+---
+(update_details)
+

@@ -1,0 +1,41 @@
+%dw 2.0
+import * from dw::Runtime
+output application/json
+---
+try(() -> 
+(
+[{
+  externalId: lower(payload.StatusEvent.Receiver.Identifier) default "",
+  identifier1: payload.StatusEvent.ShipmentIdentifier replace /^0+/ with "" as String default "",
+  statusCode: if (payload.StatusEvent.StatusCode == "LOADING_ETA_TIME") "IO"
+    else if (payload.StatusEvent.StatusCode == "UNLOADING_ETA_TIME") "AG"
+ 	else if (payload.StatusEvent.StatusCode == "LOADING_ARRIVAL_TIME") "X3"
+ 	else if (payload.StatusEvent.StatusCode == "LOADING_CHECKOUT_TIME") "AF"
+ 	else if (payload.StatusEvent.StatusCode == "UNLOADING_ARRIVAL_TIME") "X1"
+ 	else if (payload.StatusEvent.StatusCode == "UNLOADING_CHECKOUT_TIME") "D1"
+ 	else if (payload.StatusEvent.StatusCode == "LOADING_ETA_REASON_CODE") "IO"
+ 	else if (payload.StatusEvent.StatusCode == "LOADING_REASON_CODE") "L1"
+ 	else if (payload.StatusEvent.StatusCode == "IM_DROP_DEPARTURE_TERMINAL_TIME") "X4"
+ 	else if (payload.StatusEvent.StatusCode == "IM_DEPART_DEPARTURE_TERMINAL_TIME") "P1"
+ 	else if (payload.StatusEvent.StatusCode == "IM_READY_ARRIVAL_TERMINAL_TIME") "X4"
+ 	else if (payload.StatusEvent.StatusCode == "IM_PICKUP_ARRIVAL_TERMINAL_TIME") "AV"
+ 	else if (payload.StatusEvent.StatusCode == "UNLOADING_ETA_REASON_CODE") "IO"
+ 	else if (payload.StatusEvent.StatusCode == "UNLOADING_REASON_CODE") "CP"
+ 	else "IO",
+  statusDescription: payload.StatusEvent.StatusNote default "",
+  (statusReasonCode: payload.StatusEvent.StatusReason.ECTACode default "") if !(isEmpty(payload.StatusEvent.StatusReason.ECTACode default "")),
+  (latitude: payload.StatusEvent.Latitude default "") if !(payload.StatusEvent.StatusCode == "UNLOADING_ETA_TIME"), 
+  (longitude: payload.StatusEvent.Longitude default "") if !(payload.StatusEvent.StatusCode == "UNLOADING_ETA_TIME"),
+    
+    city: payload.StatusEvent.StatusLocation.AddressInformation.CityName default "",
+    country: payload.StatusEvent.StatusLocation.AddressInformation.PostalCountry default "",
+  
+  eventTimeStamp: payload.StatusEvent.EventDateTime default "",
+
+  (locatedAt: payload.StatusEvent.EventDateTime default "") if !(isEmpty(payload.StatusEvent.EventDateTime default "")),
+
+  (estimatedArrivalAtDestination: payload.StatusEvent.EventDateTime default "") if (payload.StatusEvent.StatusCode == "UNLOADING_ETA_TIME")
+}]
+) filter $ != {}
+) orElse {}
+

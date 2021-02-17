@@ -1,0 +1,25 @@
+%dw 2.0
+output application/json
+var payload_body = payload.shipments.*shipmentdata default [] map {
+	externalId: "henkeleurope" default "",
+	identifier1: ($.additionalordernumbers) default "",
+    statusCode: if ((trim(lower($.event default ""))) contains "collected") "AF"
+    else if ((trim(lower($.event default ""))) contains "pickup") "AF"
+    else if ((trim(lower($.event default ""))) contains "pickup confirmed") "AF"
+    else if ((trim(lower($.event default ""))) contains "arrived") "X4"
+    else if ((trim(lower($.event default ""))) contains "departed") "P1"
+    else if ((trim(lower($.event default ""))) contains "out for delivery") "X6"
+    else if ((trim(lower($.event default ""))) contains "delivered ok") "D1"
+    else if ((trim(lower($.event default ""))) contains "arrived to a terminal") "X4"
+    else if ((trim(lower($.event default ""))) contains "departed from a terminal") "P1"
+    else if ((trim(lower($.event default ""))) contains "expedited to destination") "X6"
+    else if ((trim(lower($.event default ""))) contains "delivered") "D1"
+     else "IO"
+    ,
+    statusDescription: $.event default "",
+    eventTimeStamp: $.eventtime default ""
+	
+}
+
+---
+payload_body 

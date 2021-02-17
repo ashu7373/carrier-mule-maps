@@ -1,0 +1,32 @@
+%dw 2.0
+output application/json
+var type_reference = payload.ConsignmentStatus.Message.*References.ReferenceCode
+var index_php = (type_reference as Array find "ABO")[0] 
+---
+[{
+  externalId: lower(payload.ConsignmentStatus.Envelope.ReceiverIdentification) default "",
+  identifier1: (payload.ConsignmentStatus.Message.*References.Reference) [0]  as String default "",
+  statusCode: if (payload.ConsignmentStatus.Message.Status.StatusCode == "0500") "AF"
+    else if (payload.ConsignmentStatus.Message.Status.StatusCode == "1000") "X4"
+ 	else if (payload.ConsignmentStatus.Message.Status.StatusCode == "1300") "P1"
+ 	else if (payload.ConsignmentStatus.Message.Status.StatusCode == "1370") "X4"
+ 	else if (payload.ConsignmentStatus.Message.Status.StatusCode == "1375") "P1"
+ 	else if (payload.ConsignmentStatus.Message.Status.StatusCode == "1400") "X4"
+ 	else if (payload.ConsignmentStatus.Message.Status.StatusCode == "1410") "X4"
+ 	else if (payload.ConsignmentStatus.Message.Status.StatusCode == "2600") "AV"
+ 	else if (payload.ConsignmentStatus.Message.Status.StatusCode == "3000") "D1"
+ 	else "IO",
+  statusDescription: if (payload.ConsignmentStatus.Message.Status.StatusCode == "0500") "Picked up"
+    else if (payload.ConsignmentStatus.Message.Status.StatusCode == "1000") "Arrived Origin Depot"
+ 	else if (payload.ConsignmentStatus.Message.Status.StatusCode == "1300") "Departure Truck"
+ 	else if (payload.ConsignmentStatus.Message.Status.StatusCode == "1370") "Arrived Gateway Terminal"
+ 	else if (payload.ConsignmentStatus.Message.Status.StatusCode == "1375") "Departure Gateway Terminal"
+ 	else if (payload.ConsignmentStatus.Message.Status.StatusCode == "1400") "Arrived Destination Terminal"
+ 	else if (payload.ConsignmentStatus.Message.Status.StatusCode == "1410") "Arrived Destination Terminal"
+ 	else if (payload.ConsignmentStatus.Message.Status.StatusCode == "2600") "Departed Destination Terminal (Out for Delivery)"
+ 	else if (payload.ConsignmentStatus.Message.Status.StatusCode == "3000") "Delivered"
+ 	else "IO",
+  (locatedAt: (payload.ConsignmentStatus.Message.Status.StatusDateTime.Date as String default "") ++ "T" ++ (payload.ConsignmentStatus.Message.Status.StatusDateTime.Time as String default "" ) ++ (payload.ConsignmentStatus.Message.Status.StatusDateTime.UTCTimeDifference as String default "" )),
+  
+}]
+

@@ -1,0 +1,9 @@
+%dw 2.0
+output application/json
+---
+payload.TD_XML_Table.*row default [] map {
+
+	externalId: lower(trim($.CustomerCode)) default "",
+	identifier1: trim($.Load_Number) default "",
+	trailerNumber: trim($.TrailerNumber) default ""
+}

@@ -1,0 +1,23 @@
+%dw 2.0
+import * from dw::core::Arrays
+import * from dw::core::Strings
+
+output application/json
+---
+payload.*StatusEvent default [] map{
+	externalId: lower($.Shipper.Name) default "",
+	identifier1: $.ShipmentIdentifier default "",
+	statusCode: if(trim($.StatusCode) == "1") 
+	( if (trim($.StatusLocation) contains "Loading") "X3" else if(trim($.StatusLocation) contains "Delivery") "X1" else "")
+	else if (trim($.StatusCode) == "24")
+	( if (trim($.StatusLocation) contains "Loading") "AF" else if(trim($.StatusLocation) contains "Delivery") "D1" else "")
+	else if (trim($.StatusCode) == "31") "X6"
+	else "",
+	statusDescription: ("StatusCode = " ++ $.StatusCode ++ " --> " ++ $.StatusLocation ++ " - " ++ $.StatusNote) as String default "",
+	(latitude: $.EventLatitude default "") if !(isEmpty(trim($.EventLatitude))),
+	(longitude: $.EventLongitude default "") if !(isEmpty(trim($.EventLongitude))),
+	locatedAt: $.EventDateTime default "",
+	(truckNumber: $.LicensePlateNumber default "") if !(isEmpty(trim($.LicensePlateNumber)))
+	}
+
+	

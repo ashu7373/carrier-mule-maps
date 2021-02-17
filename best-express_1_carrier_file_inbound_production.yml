@@ -1,0 +1,41 @@
+input payload application/csv header = false
+output application/json skipNullOn="everywhere"
+var index = payload [0] pluck $$
+
+var header_body = [{
+	col1: index[0] default "",
+	col2: index[1] default "",
+	col3: index[2] default "",
+	col4: index[3] default "",
+	col5: index[4] default "",
+	col6: index[5] default "",
+	col7: index[6] default ""
+}]
+
+var header = if (isEmpty(index)) 0 else index [0] 
+var dataset = payload default [] ++ header_body default []
+
+var plusSign = dataset  groupBy ($[2]) pluck $$
+var plusSign_1 = dataset  groupBy ($[2]) pluck $
+
+var csvBody = plusSign default [] map (x, index) -> {
+        "a": x as String default "",
+        "b": sizeOf(plusSign_1[index])        
+}
+
+var payload_final = dataset default [] map {
+    externalId: lower(trim($[0])) default "",
+    earliestAppointmentTime: $[5] default "",
+    latestAppointmentTime: $[6] default "",
+    identifier1: $[2] default "",
+    identifier2: if (($[3] default "") == "99") (csvBody.b[((csvBody.a default [] find $[2])[0]) as Number default ""] default "" ) as String default "" else  $[3] as String default "",
+    
+    
+}
+
+
+
+---
+
+
+payload_final

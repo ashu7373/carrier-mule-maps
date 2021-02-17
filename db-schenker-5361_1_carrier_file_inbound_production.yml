@@ -1,0 +1,71 @@
+input payload application/csv 
+output application/json 
+var index = payload [0] pluck $$
+
+var header = if (isEmpty(index)) 0 else index [0] 
+var dataset = payload[header]
+
+var data_1 = dataset default [] map {
+    a: $ default "" splitBy (";")
+}.a map{
+    externalId: lower(trim($[0])) default "",
+    identifier1: ($[1]) default "",
+    truckNumber: (trim($[2])) default "",
+    trailerNumber: (trim($[3])) default ""
+    
+}
+
+var data_2 = dataset default [] map {
+    a: $ default "" splitBy (";")
+}.a map{
+    externalId: lower(trim($[0])) default "",
+    identifier1: ($[1]) default "",
+    terminal1Country: ($[6]) default "",
+    estimatedArrivalAtDestination: ($[4]) default "",
+    statusCode: if ( trim($[7]) as String ==  "COL") "X3"   
+                else if  ( trim($[7]) as String == "DOT") "AF"
+                else if  ( trim($[7]) as String == "DLV") "D1"
+                else if  ( trim($[7]) as String == "DIS") "X1"
+                else if  ( trim($[7]) as String == "PUP") "X1"
+                else if  ( trim($[7]) as String == "ENT") "XB"
+                else if  ( trim($[7]) as String == "COT") "IO"
+                else if  ( trim($[7]) as String == "NCL") "OO"
+                else if  ( trim($[7]) as String == "MAN") "P1"
+                else if  ( trim($[7]) as String == "ENM") "X4"
+                else "IO",
+    statusDescription: if ( trim($[7]) as String contains "ENT" ) "Booked"
+else if ( trim($[7]) as String contains "COT" ) "Out for collection" 
+else if ( trim($[7]) as String contains "COL" ) "Collected" 
+else if ( trim($[7]) as String contains "NCL" ) "Not Collected" 
+else if ( trim($[7]) as String contains "DET" ) "Delivered to terminal by shipper" 
+else if ( trim($[7]) as String contains "MAN" ) "Departed" 
+else if ( trim($[7]) as String contains "ENM" ) "Arrived" 
+else if ( trim($[7]) as String contains "NLO" ) "Not loaded" 
+else if ( trim($[7]) as String contains "CCL" ) "Customs clearance initiated" 
+else if ( trim($[7]) as String contains "CCF" ) "Customs clearance finalised"
+else if ( trim($[7]) as String contains "DIS" ) "To consignee’s disposal" 
+else if ( trim($[7]) as String contains "DIF" ) "Ready for pick up" 
+else if ( trim($[7]) as String contains "PUP" ) "Picked up by consignee"
+else if ( trim($[7]) as String contains "PUF" ) "Picked up at agent" 
+else if ( trim($[7]) as String contains "DOT" ) "Out for delivery" 
+else if ( trim($[7]) as String contains "DLV" ) "Delivered"
+else if ( trim($[7]) as String contains "NDL" ) "Not delivered" 
+else if ( trim($[7]) as String contains "POD" ) "ePOD available" 
+else if ( trim($[7]) as String contains "TIN" ) "Terminal inventory" 
+else if ( trim($[7]) as String contains "DEP" ) "Linehaul departed" 
+else if ( trim($[7]) as String contains "ARR" ) "Linehaul arrived" 
+else if ( trim($[7]) as String contains "TLO" ) "Train Loaded" 
+else if ( trim($[7]) as String contains "TUL" ) "Train Unloaded" 
+else if ( trim($[7]) as String contains "VLO" ) "Vessel Loaded" 
+else if ( trim($[7]) as String contains "VUL" ) "Vessel Unloaded" 
+else if ( trim($[7]) as String contains "VTL" ) "Vessel/Train Loaded"
+else if ( trim($[7]) as String contains "VTU" ) "Vessel/Train Unloaded"
+else "New Activity" ,
+    
+    eventTimeStamp: (($[5] default "") as String)[0 to 9] ++ "T" ++ (($[5] default "") as String) [11 to -1] default ""
+}
+---
+
+data_1 filter $ != {}
+++
+data_2 filter $ != {}

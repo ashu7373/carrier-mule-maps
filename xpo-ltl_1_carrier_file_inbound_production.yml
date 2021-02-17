@@ -1,0 +1,33 @@
+%dw 2.0
+output application/json
+var pickup_body = payload default [] map {
+        a: $[0] default "" splitBy ("\t")
+}.a map {
+	(externalId: if (lower(trim($[1])) as String default "" contains "3m") "3m"
+	else if (lower(trim($[9])) as String default "" contains "3m") "3m"
+	else "")  if ((lower(trim($[1])) as String default "" contains "3m") or (lower(trim($[9])) as String default "" contains "3m")),
+	identifier1: trim($[18]) default "", 
+	identifier2: (trim($[20])) default "" ,
+	identifier3: (trim($[21])) default "" ,
+	identifier4: (trim($[22])) default "" ,
+	pickupTime: ((trim($[39])) as String )[3 to 5] ++ " "  ++ ((trim($[39])) as String )[0 to 1] ++ " 20"  ++ ((trim($[39])) as String )[7 to -1] ++ " 00:00AM" default "",
+	(estimatedArrivalAtDestination: ((trim($[40])) as String )[-4 to -1] ++ "-" ++ ((trim($[40])) as String )[-10 to -9] ++ "-" ++ ((trim($[40])) as String )[-7 to -6] ++ "T00:00:000" default "") if (trim($[40]) as String default "" contains "Est")
+	}
+	
+var del_body = payload default [] map {
+        a: $[0] default "" splitBy ("\t")
+}.a map {
+	(externalId: if (lower(trim($[1])) as String default "" contains "3m") "3m"
+	else if (lower(trim($[9])) as String default "" contains "3m") "3m"
+	else "")  if (((lower(trim($[1])) as String default "" contains "3m") or (lower(trim($[9])) as String default "" contains "3m")) and !(trim($[40]) as String default "" contains "Est")),
+	(identifier1: trim($[18]) default "") if !(trim($[40]) as String default "" contains "Est"), 
+	(identifier2: (trim($[20])) default "") if !(trim($[40]) as String default "" contains "Est"),
+	(identifier3: (trim($[21])) default "") if !(trim($[40]) as String default "" contains "Est"),
+	(identifier4: (trim($[22])) default "") if !(trim($[40]) as String default "" contains "Est"),
+	(deliveryTime: ((trim($[40])) as String )[-4 to -1] ++ "-" ++ ((trim($[40])) as String )[-10 to -9] ++ "-" ++ ((trim($[40])) as String )[-7 to -6] ++ "T00:00:000" default "") if !(trim($[40]) as String default "" contains "Est")
+	}
+---
+
+pickup_body filter $ != {}
+++
+del_body filter $ != {}

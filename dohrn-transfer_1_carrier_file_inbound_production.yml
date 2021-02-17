@@ -1,0 +1,70 @@
+%dw 2.0
+output application/json
+
+//var edi214Values = payload.TransactionSets.v004010."214".Heading."0200_Loop"
+var edi214Values_1 = (payload.TransactionSets.v004010."214".Heading."0200_Loop"[0]."0205_Loop")  default []
+fun computeValuesFromN9Heading(loadInfo,value) = (loadInfo filter($."L1102" == value)).L1101[0]
+
+var array_loop = (payload.TransactionSets.v004010."214".Heading."0200_Loop" )[0] default [] 
+
+
+var body = edi214Values_1 default [] map  {
+	//x: $,
+	Mode : "file",
+	TrackingMethod : "location_file",
+	EdiUpdate : "true",
+    EdiType : "edi_214",
+    TruckNumber: ($.*"146_MS2".MS202[0])  default "",
+    StatusCode: if (($.*"140_AT7".AT701[0]) == "L1") "AF" else ($.*"140_AT7".AT701[0])  default "",
+    
+    StatusDescription: if (($.*"140_AT7".AT701[0]) == "AF") "Picked Up"
+else if (($.*"140_AT7".AT701[0]) == "A3") "Load Returned"
+else if (($.*"140_AT7".AT701[0]) == "A7") "Load Refused"
+else if (($.*"140_AT7".AT701[0]) == "A9") "Load Damaged"
+else if (($.*"140_AT7".AT701[0]) == "CA") "Load Cancelled"
+else if (($.*"140_AT7".AT701[0]) == "K1") "Customs"
+else if (($.*"140_AT7".AT701[0]) == "P1") "Departed Terminal"
+else if (($.*"140_AT7".AT701[0]) == "SD") "Delayed"
+else if (($.*"140_AT7".AT701[0]) == "X4") "Arrived At Terminal"
+else if (($.*"140_AT7".AT701[0]) == "X3") "At Pickup"
+else if (($.*"140_AT7".AT701[0]) == "D1") "Delivered"
+else if (($.*"140_AT7".AT701[0]) == "X1") "At Consignee"
+else if (($.*"140_AT7".AT701[0]) == "X2") "Delayed"
+else if (($.*"140_AT7".AT701[0]) == "AA") "Pickup Scheduled"
+else if (($.*"140_AT7".AT701[0]) == "AB") "Delivery Scheduled"
+else if (($.*"140_AT7".AT701[0]) == "OO") "Shipment Not Received"
+else if (($.*"140_AT7".AT701[0]) == "XB") "Shipment Acknowledged"
+else if (($.*"140_AT7".AT701[0]) == "CP") "Completed Loading"
+else if (($.*"140_AT7".AT701[0]) == "L1") "Picked Up"
+else if (($.*"140_AT7".AT701[0]) == "AI") "Shipment Reconsigned"
+else if (($.*"140_AT7".AT701[0]) == "AM") "Loaded On Truck"
+else if (($.*"140_AT7".AT701[0]) == "BA") "Cartage Pickup"
+else if (($.*"140_AT7".AT701[0]) == "CL") "Trailer Closed Out"
+else if (($.*"140_AT7".AT701[0]) == "IO") "New Activity"
+else if (($.*"140_AT7".AT701[0]) == "J1") "Delivered To Connecting Line"
+else if (($.*"140_AT7".AT701[0]) == "PR") "Customs Hold"
+else if (($.*"140_AT7".AT701[0]) == "UD") "Unknown Carrier Status"
+else if (($.*"140_AT7".AT701[0]) == "UL") "Unloaded"
+else if (($.*"140_AT7".AT701[0]) == "X6") "In Transit"
+else if (($.*"140_AT7".AT701[0]) == "AH") "Attempted Delivery"
+else if (($.*"140_AT7".AT701[0]) == "AJ") "Tendered For Delivery"
+else if (($.*"140_AT7".AT701[0]) == "AP") "Delivery Not Completed"
+else if (($.*"140_AT7".AT701[0]) == "AV") "Available For Delivery"
+else if (($.*"140_AT7".AT701[0]) == "S1") "Trailer Spotted"
+else if (($.*"140_AT7".AT701[0]) == "AG") "ETA Update"
+
+	
+	else "New Activity" default "",
+    
+    EventTimeStamp: ($.*"140_AT7"."AT705" ) [0] default "",
+    City: ($.*"143_MS1"."MS101") [0] default "",
+    State: ($.*"143_MS1"."MS102") [0] default "",
+    Country: ($.*"143_MS1"."MS103") [0] default "",
+    CarrierScac: (payload.TransactionSets.v004010."214".Group.GS02) [0] default "",
+    BillOfLading : if ( !isEmpty((payload.TransactionSets.v004010."214".Heading."020_B10".B1002) default "")) (payload.TransactionSets.v004010."214".Heading."020_B10".B1002)[0] default "" 
+    else (computeValuesFromN9Heading(payload.TransactionSets.v004010."214".Heading."030_L11",'BM'))[0] default "",
+
+}
+
+---
+body

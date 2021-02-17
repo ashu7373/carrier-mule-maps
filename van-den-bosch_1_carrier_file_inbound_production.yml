@@ -1,0 +1,34 @@
+%dw 2.0
+output application/json
+var headers = payload[0] pluck $$
+
+var csvBody = payload default [] map {
+        a: $[0] default "" splitBy (";")
+}.a map {
+        externalId: trim($[0]) default "",
+        identifier1: trim($[1]) default "",
+        (estimatedArrivalAtDestination: (trim($[4])  default "")) if !(isEmpty(trim($[4]))),
+        (longitude: trim($[6]) default "") if !(isEmpty(trim($[6]))) and (trim($[6]) != "0"),
+        (latitude: trim($[7]) default "") if !(isEmpty(trim($[7]))) and (trim($[7]) != "0"),
+        (locatedAt: (trim($[8]) default "" as String )) if !(isEmpty(trim($[6]))) and !(isEmpty(trim($[7]))) and (trim($[6]) != "0") and (trim($[7]) != "0")
+    }
+    
+var pkBody = payload default [] map {
+        a: $[0] default "" splitBy (";")
+}.a map {
+        externalId: trim($[0]) default "",
+        identifier1: trim($[1]) default "",
+        pickupTime: trim($[3]) default ""
+          }
+
+var del_Body = payload default [] map {
+        a: $[0] default "" splitBy (";")
+}.a map {
+        externalId: trim($[0]) default "",
+        identifier1: trim($[1]) default "",
+        deliveryTime: trim($[5]) default ""
+         }
+---
+(
+		csvBody ++ pkBody ++ del_Body 
+)

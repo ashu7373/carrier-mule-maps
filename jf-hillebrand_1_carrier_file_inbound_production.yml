@@ -1,0 +1,30 @@
+%dw 2.0
+import * from dw::core::Strings
+input payload application/csv 
+output application/json skipNullOn="everywhere"
+
+var csvBody_pickup = payload default [] map {
+    externalId: lower(trim($[0])) default "",
+	identifier1: (trim($[1]) default "") ,
+	(deliveryTime: ((trim($[2]) as String) replace "NULL" with "" ) default "") if !(isEmpty(((trim($[2]) as String) replace "NULL" with "" )) ),
+	(pickupTime: ((trim($[3]) as String) replace "NULL" with "" ) default ""),
+    (earliestAppointmentTime : ((trim($[4]) as String) replace "NULL" with "" ) default "") if !(isEmpty(((trim($[4]) as String) replace "NULL" with "" )) ),
+    (latestAppointmentTime: ((trim($[5]) as String) replace "NULL" with "" ) default "") if !(isEmpty(((trim($[5]) as String) replace "NULL" with "" )) ),
+    (identifier2: "2") if !(isEmpty(((trim($[4]) as String) replace "NULL" with "" )) )
+}
+
+var csvBody_del = payload default [] map {
+    externalId: lower(trim($[0])) default "",
+	identifier1: (trim($[1]) default "") ,
+	(deliveryTime: ((trim($[2]) as String) replace "NULL" with "" ) default "") if !(isEmpty(((trim($[2]) as String) replace "NULL" with "" )) ),
+	(pickupTime: ((trim($[3]) as String) replace "NULL" with "" ) default ""),
+    (earliestAppointmentTime : ((trim($[6]) as String) replace "NULL" with "" ) default "") if !(isEmpty(((trim($[6]) as String) replace "NULL" with "" )) ),
+    (latestAppointmentTime: ((trim($[7]) as String) replace "NULL" with "" ) default "") if !(isEmpty(((trim($[7]) as String) replace "NULL" with "" )) ),
+    (identifier2: "1") if !(isEmpty(((trim($[6]) as String) replace "NULL" with "" )) )
+}
+---
+csvBody_pickup
+++
+csvBody_del
+
+   

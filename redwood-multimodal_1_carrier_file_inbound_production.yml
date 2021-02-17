@@ -1,0 +1,16 @@
+%dw 2.0
+output application/json
+---
+payload default [] map  {
+    identifier1: (trim($[0])) default "",
+    identifier2: (trim($[1])) default "",
+    identifier3: (trim($[8])) default "",
+    identifier4: (trim($[9])) default "",
+	externalId: lower(trim($[2])) default "",
+    city: (trim($[5])) default "",
+    statusCode: if ((trim($[3])) == "CP") "AF" else (trim($[3])) default "",
+    state: (trim($[6])) default "",
+    statusDescription:(trim($[4])) default "",
+    eventTimeStamp: (trim($[7])) default ""
+	
+}

@@ -1,0 +1,158 @@
+%dw 2.0
+output application/json
+var headers = payload[0] pluck $$
+var csvBody_del = payload default [] map {
+        a: $[0] default "" splitBy (";")
+}.a map {
+	
+	(externalId: lower(trim($[0])) default "") if !(isEmpty(trim($[2]))) ,
+	(identifier1: lower(trim($[1])) default "") if !(isEmpty(trim($[2]))),
+	(deliveryTime: (trim($[2]) as String)[0 to 7] ++ "T" ++ (trim($[2]) as String)[8 to 13] ++ ".000" default "") if !(isEmpty(trim($[2])))
+	
+}
+
+var header_Body_del = headers default [] map {
+        a: $ default "" splitBy (";")
+}.a map {
+	
+	(externalId: lower(trim($[0])) default "") if !(isEmpty(trim($[2]))) and !(lower(trim($[0])) contains "externalid"),
+	(identifier1: lower(trim($[1])) default "") if !(isEmpty(trim($[2]))) and !(lower(trim($[0])) contains "externalid"),
+	(deliveryTime: (trim($[2]) as String)[0 to 7] ++ "T" ++ (trim($[2]) as String)[8 to 13] ++ ".000" default "") if !(isEmpty(trim($[2]))) and !(lower(trim($[0])) contains "externalid")
+	
+}
+
+var csvBody_pk = payload default [] map {
+        a: $[0] default "" splitBy (";")
+}.a map {
+	
+	(externalId: lower(trim($[0])) default "") if !(isEmpty(trim($[3]))) ,
+	(identifier1: lower(trim($[1])) default "") if !(isEmpty(trim($[3]))),
+	(pickupTime: (trim($[3]) as String)[0 to 7] ++ "T" ++ (trim($[3]) as String)[8 to 13] ++ ".000" default "") if !(isEmpty(trim($[3])))
+	
+}
+
+var header_Body_pk = headers default [] map {
+        a: $ default "" splitBy (";")
+}.a map {
+	
+	(externalId: lower(trim($[0])) default "") if !(isEmpty(trim($[3]))) and !(lower(trim($[0])) contains "externalid"),
+	(identifier1: lower(trim($[1])) default "") if !(isEmpty(trim($[3]))) and !(lower(trim($[0])) contains "externalid"),
+	(pickupTime: (trim($[3]) as String)[0 to 7] ++ "T" ++ (trim($[3]) as String)[8 to 13] ++ ".000" default "") if !(isEmpty(trim($[3]))) and !(lower(trim($[0])) contains "externalid")
+	
+}
+
+var csvBody_eta = payload default [] map {
+        a: $[0] default "" splitBy (";")
+}.a map {
+	
+	(externalId: lower(trim($[0])) default "") if !(isEmpty(trim($[4]))) ,
+	(identifier1: lower(trim($[1])) default "") if !(isEmpty(trim($[4]))),
+	estimatedArrivalAtDestination: (trim($[4]) as String)[0 to 7] ++ "T" ++ (trim($[4]) as String)[8 to 13] ++ ".000" default ""
+	
+}
+
+var header_Body_eta = headers default [] map {
+        a: $ default "" splitBy (";")
+}.a map {
+	
+	(externalId: lower(trim($[0])) default "") if !(isEmpty(trim($[4]))) and !(lower(trim($[0])) contains "externalid"),
+	(identifier1: lower(trim($[1])) default "") if !(isEmpty(trim($[4]))) and !(lower(trim($[0])) contains "externalid"),
+	(estimatedArrivalAtDestination: (trim($[4]) as String)[0 to 7] ++ "T" ++ (trim($[4]) as String)[8 to 13] ++ ".000" default "") if !(lower(trim($[0])) contains "externalid")
+	
+}
+
+var csvBody_appt = payload default [] map {
+        a: $[0] default "" splitBy (";")
+}.a map {
+	
+	(externalId: lower(trim($[0])) default "") if !(isEmpty(trim($[5]))) ,
+	(identifier1: lower(trim($[1])) default "") if !(isEmpty(trim($[5]))),
+	earliestAppointmentTime: (trim($[5]) as String)[0 to 7] ++ "T" ++ (trim($[5]) as String)[8 to 13] ++ ".000" default "",
+	latestAppointmentTime: (trim($[6]) as String)[0 to 7] ++ "T" ++ (trim($[6]) as String)[8 to 13] ++ ".000" default "",
+	identifier2: trim($[7]) default ""
+	
+}
+
+var header_Body_appt = headers default [] map {
+        a: $ default "" splitBy (";")
+}.a map {
+	
+	(externalId: lower(trim($[0])) default "") if !(isEmpty(trim($[5]))) and !(lower(trim($[0])) contains "externalid"),
+	(identifier1: lower(trim($[1])) default "") if !(isEmpty(trim($[5]))) and !(lower(trim($[0])) contains "externalid"),
+	(earliestAppointmentTime: (trim($[5]) as String)[0 to 7] ++ "T" ++ (trim($[5]) as String)[8 to 13] ++ ".000" default "") if !(lower(trim($[0])) contains "externalid"),
+	(latestAppointmentTime: (trim($[6]) as String)[0 to 7] ++ "T" ++ (trim($[6]) as String)[8 to 13] ++ ".000" default "") if !(lower(trim($[0])) contains "externalid"),
+	(identifier2: trim($[7]) default "") if !(lower(trim($[0])) contains "externalid")
+	
+}
+
+var csvBody = payload default [] map {
+        a: $[0] default "" splitBy (";")
+}.a map {
+	externalId: lower(trim($[0])) default "",
+	identifier1: lower(trim($[1])) default "",
+	
+	
+	statusCode: if (trim($[8]) == "LOADING_ETA_TIME") "IO"
+    else if (trim($[8]) == "UNLOADING_ETA_TIME") "AG"
+ 	else if (trim($[8]) == "LOADING_ARRIVAL_TIME") "X3"
+ 	else if (trim($[8]) == "LOADING_CHECKOUT_TIME") "AF"
+ 	else if (trim($[8]) == "UNLOADING_ARRIVAL_TIME") "X1"
+ 	else if (trim($[8]) == "UNLOADING_CHECKOUT_TIME") "D1"
+ 	else if (trim($[8]) == "LOADING_ETA_REASON_CODE") "IO"
+ 	else if (trim($[8]) == "LOADING_REASON_CODE") "L1"
+ 	else if (trim($[8]) == "IM_DROP_DEPARTURE_TERMINAL_TIME") "X4"
+ 	else if (trim($[8]) == "IM_DEPART_DEPARTURE_TERMINAL_TIME") "P1"
+ 	else if (trim($[8]) == "IM_READY_ARRIVAL_TERMINAL_TIME") "X4"
+ 	else if (trim($[8]) == "IM_PICKUP_ARRIVAL_TERMINAL_TIME") "AV"
+ 	else if (trim($[8]) == "UNLOADING_ETA_REASON_CODE") "AG"
+ 	else if (trim($[8]) == "UNLOADING_REASON_CODE") "CP"
+ 	else "IO",
+	statusDescription: trim($[9]) default "",
+	eventTimeStamp: (trim($[10]) as String)[0 to 7] ++ "T" ++ (trim($[10]) as String)[8 to 13] ++ ".000" default ""
+	
+}
+
+var headers_Body = headers default [] map {
+        a: $ default "" splitBy (";")
+}.a map {
+	(externalId: lower(trim($[0])) default "") if !(lower(trim($[0])) contains "externalid"),
+	(identifier1: lower(trim($[1])) default "") if !(lower(trim($[0])) contains "externalid"),	
+	(statusCode: if (trim($[8]) == "LOADING_ETA_TIME") "IO"
+    else if (trim($[8]) == "UNLOADING_ETA_TIME") "AG"
+ 	else if (trim($[8]) == "LOADING_ARRIVAL_TIME") "X3"
+ 	else if (trim($[8]) == "LOADING_CHECKOUT_TIME") "AF"
+ 	else if (trim($[8]) == "UNLOADING_ARRIVAL_TIME") "X1"
+ 	else if (trim($[8]) == "UNLOADING_CHECKOUT_TIME") "D1"
+ 	else if (trim($[8]) == "LOADING_ETA_REASON_CODE") "IO"
+ 	else if (trim($[8]) == "LOADING_REASON_CODE") "L1"
+ 	else if (trim($[8]) == "IM_DROP_DEPARTURE_TERMINAL_TIME") "X4"
+ 	else if (trim($[8]) == "IM_DEPART_DEPARTURE_TERMINAL_TIME") "P1"
+ 	else if (trim($[8]) == "IM_READY_ARRIVAL_TERMINAL_TIME") "X4"
+ 	else if (trim($[8]) == "IM_PICKUP_ARRIVAL_TERMINAL_TIME") "AV"
+ 	else if (trim($[8]) == "UNLOADING_ETA_REASON_CODE") "IO"
+ 	else if (trim($[8]) == "UNLOADING_REASON_CODE") "CP"
+ 	else "IO") if !(lower(trim($[0])) contains "externalid"),
+	(statusDescription: trim($[9]) default "") if !(lower(trim($[0])) contains "externalid"),
+	(eventTimeStamp: (trim($[10]) as String)[0 to 7] ++ "T" ++ (trim($[10]) as String)[8 to 13] ++ ".000" default "") if !(lower(trim($[0])) contains "externalid")
+	
+}
+---
+ headers_Body filter $ != {} 
+ ++ 
+ csvBody filter $ != {} 
+ ++
+ header_Body_del filter $ != {} 
+ ++
+ csvBody_del filter $ != {} 
+ ++
+ header_Body_pk filter $ != {} 
+ ++
+ csvBody_pk filter $ != {} 
+ ++
+ header_Body_eta filter $ != {} 
+ ++
+ csvBody_eta filter $ != {} 
+ ++
+ header_Body_appt filter $ != {} 
+ ++
+ csvBody_appt filter $ != {} 

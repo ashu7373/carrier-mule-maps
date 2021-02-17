@@ -1,0 +1,28 @@
+%dw 2.0
+import * from dw::Runtime
+output application/json
+
+
+
+
+
+---
+try(() -> 
+(payload.*Shipment default [] map {
+	externalId: if (!isEmpty(trim(payload.MessageReceiver.Identifier default ""))) lower(payload.MessageReceiver.Identifier default "") else lower(payload.MessageReceiver.Name default "")  default "",
+	identifier1: (($.VA default "") ) as String default "",
+	statusCode: if ((trim($.StatusCode) as String) == "200") "X7"
+	else if ((trim($.StatusCode default "") as String) == "201") "P1"
+	else if ((trim($.StatusCode default "") as String) == "202") "X4"
+	else if ((trim($.StatusCode default "") as String) == "203") "X6"
+    else if ((trim($.StatusCode default "") as String) == "204") "AG"
+    else if ((trim($.StatusCode default "") as String) == "210") "AF"
+    else if ((trim($.StatusCode default "") as String) == "250") "D1"
+	else "IO" default "",
+	statusDescription: $.StatusName default "",
+	locatedAt: payload.EstimatedArrival.EventTime default "",
+	estimatedArrivalAtDestination: if ((trim($.StatusCode  default "") as String) == "200") ""
+	else if ((trim($.StatusCode  default "") as String) == "210") ""
+    else payload.EstimatedArrival.EstimatedTime default ""
+}) filter $ != {}
+) orElse {}

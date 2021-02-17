@@ -1,0 +1,19 @@
+%dw 2.0
+output application/json
+var payload_body  = payload map (x, index) -> {
+
+externalId: lower(trim(x[0])) default "",
+identifier1: x[1] default "",
+shipmentStatusIndicator: if ( trim(x[4]) == "LT") "AL"
+else if ( trim(x[4]) == "CO") "AM"
+else if ( trim(x[4]) == "RL") "UR"
+else if ( trim(x[4]) == "TD") "RL"
+else if ( trim(x[4]) == "TA") "AR"
+else "IO" default "",
+eventTimeStamp: x[3] default "",
+statusDescription: x[2] default "",
+railEquipmentInitials: x[5] default "",
+railEquipmentNumber:  x[6] default ""
+}
+---
+payload_body

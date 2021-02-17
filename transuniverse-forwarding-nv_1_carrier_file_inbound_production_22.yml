@@ -1,0 +1,21 @@
+%dw 2.0
+output application/json
+---
+
+payload.TRACKING.*SHIPMENT default [] map {
+
+"externalId": "1012804" default "",
+"identifier2": $.TRACKID default "",
+"identifier1": $.REFERENCE default "",
+("estimatedArrivalAtDestination": $.ShipmentStatusProperties.ConveyanceInformation.EstimatedTimeOfArrivalDate.DateTimeInformation.DateTime) if !(isEmpty($.ShipmentStatusProperties.ConveyanceInformation.EstimatedTimeOfArrivalDate.DateTimeInformation.DateTime)),
+"statusCode": if (trim($.STATUSCODE) == "REG") "IO"
+else if (trim($.STATUSCODE) == "DTU") "P1"
+else if (trim($.STATUSCODE) == "ATU") "X4"
+else if (trim($.STATUSCODE) == "DEL") "D1"
+else if (trim($.STATUSCODE) == "COL") "AF"
+else "IO" ,
+"statusDescription": $.STATUSDESCRIPTION,
+"locatedAt": (($.TIMESTAMP as String)[4 to 7] ++ "-" ++ ($.TIMESTAMP as String)[2 to 3] ++ "-" ++ ($.TIMESTAMP as String)[0 to 1] ++ "T" ++ ($.TIMESTAMP as String)[8 to 9] ++ ":" ++ ($.TIMESTAMP as String)[10 to 11] ++ ":00")
+default ""
+}
+

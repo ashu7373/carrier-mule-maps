@@ -1,0 +1,26 @@
+%dw 2.0
+import * from dw::core::Strings
+import * from dw::core::Arrays
+import * from dw::core::Objects
+import * from dw::Runtime
+
+output application/json
+
+---
+payload.*Orders default [] map{
+    externalId: trim($.DebtorNalco) default "",
+    identifier1: trim($.OrderNalco) default "",
+    statusCode: if (trim($.Code) == "46") "AF"
+                else if (trim($.Code) == "56") "D1"
+                else if (trim($.Code) == "54") "AG"
+                else if (trim($.Code) == "44") "AF"
+                else "IO" ,
+    statusDescription: trim($.Status) default "",
+    eventTimeStamp: if (trim($.Code) == "46") (($.Dateloadingrealised as String)[ 6 to 9] ++ "-" ++ ($.Dateloadingrealised as String)[ 3 to 4] ++ "-" ++ ($.Dateloadingrealised as String)[ 0 to 1] ++ "T" ++ $.Timeloadingrealised as String)
+                else if (trim($.Code) == "56") (($.Dateunloadingrealised as String)[ 6 to 9] ++ "-" ++ ($.Dateunloadingrealised as String)[ 3 to 4] ++ "-" ++ ($.Dateunloadingrealised as String)[ 0 to 1] ++ "T" ++ $.Timeunloadingrealised as String)
+                else if (trim($.Code) == "54") (($.Dateunloadingplanned as String)[ 6 to 9] ++ "-" ++ ($.Dateunloadingplanned as String)[ 3 to 4] ++ "-" ++ ($.Dateunloadingplanned as String)[ 0 to 1] ++ "T" ++ $.Timeunloadingplanned as String) default ""
+                else if (trim($.Code) == "44") (($.Dateloadingplanned as String)[ 6 to 9] ++ "-" ++ ($.Dateloadingplanned as String)[ 3 to 4] ++ "-" ++ ($.Dateloadingplanned as String)[ 0 to 1] ++ "T" ++ $.Timeloadingplanned as String)
+                else now() ,
+    (estimatedArrivalAtDestination: (($.Dateunloadingplanned as String)[ 6 to 9] ++ "-" ++ ($.Dateunloadingplanned as String)[ 3 to 4] ++ "-" ++ ($.Dateunloadingplanned as String)[ 0 to 1] ++ "T" ++ $.Timeunloadingplanned as String) default "") if (trim($.Code) == "54")
+                                   
+}

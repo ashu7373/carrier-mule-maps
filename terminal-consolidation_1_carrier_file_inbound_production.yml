@@ -1,0 +1,29 @@
+%dw 2.0
+output application/json
+
+var pickup_body = payload default [] map  {
+	externalId: lower(trim($[1])) default "",
+	identifier1: (trim($[2]) default "") replace /([\-\,\n,"\&# =;,"-",\\\\])/ with "",
+    identifier2: (trim($[0]) default "") replace /([\-\,\n,"\&# =;,"-",\\\\])/ with "",
+	truckNumber: trim($[3]) default "",
+	city: trim($[5]) default "",
+	state: trim($[6]) default "",
+	pickupTime: ((trim($[7]) as String default "")) [6 to 9] ++ "-" ++ ((trim($[7]) as String default "")) [0 to 1] ++ "-" ++ ((trim($[7]) as String default "")) [3 to 4] ++ "T" default "" ++ (trim($[8]) as String default "")	
+	
+	}
+	
+var del_body = payload default [] map  {
+	(externalId: lower(trim($[1])) default "")  if !(isEmpty(trim($[13])) and isEmpty(trim($[14]))),
+	(identifier1: (trim($[2]) default "") replace /([\-\,\n,"\&# =;,"-",\\\\])/ with "") if !(isEmpty(trim($[13])) and isEmpty(trim($[14]))),
+    (identifier2: (trim($[0]) default "") replace /([\-\,\n,"\&# =;,"-",\\\\])/ with "") if !(isEmpty(trim($[13])) and isEmpty(trim($[14]))),
+	
+	(deliveredAt: ((trim($[13]) as String default "")) [6 to 9] ++ "-" ++ ((trim($[13]) as String default "")) [0 to 1] ++ "-" ++ ((trim($[13]) as String default "")) [3 to 4] ++ "T" default "" ++ (trim($[14]) as String default "")) if !(isEmpty(trim($[13])) and isEmpty(trim($[14])))
+	
+	}
+
+
+---
+
+pickup_body filter $ != {}
+++
+del_body filter $ != {}

@@ -1,0 +1,33 @@
+%dw 2.0
+output application/json
+var test = payload.Shipment
+
+var body_1 = payload.*Shipment default [] map {
+	externalId: if (!isEmpty(trim(payload.MessageReceiver.Identifier))) lower(payload.MessageReceiver.Identifier) else lower(payload.MessageReceiver.Name),
+	identifier1: (($.Referenz default "") as Number) as String,
+	statusCode: if ((trim($.StatusCode) as String) == "1") "X3"
+	else if ((trim($.StatusCode) as String) == "31") "X6"
+	else if ((trim($.StatusCode) as String) == "20") "SD"
+	else if ((trim($.StatusCode) as String) == "21") "D1"
+	else "IO" default "",
+	statusDescription: $.StatusName default "",
+	locatedAt: if ((trim($.StatusCode) as String) == "1") payload.Header.MessageTime
+	else if ((trim($.StatusCode) as String) == "31") payload.Header.MessageTime
+	else if ((trim($.StatusCode) as String) == "20") payload.EstimatedArrival.EventTime
+	else if ((trim($.StatusCode) as String) == "21") payload.DeliveryDate.EventTime
+	else payload.Header.MessageTime default "",
+	estimatedArrivalAtDestination: if (!isEmpty(trim(payload.EstimatedArrival.EstimatedTime))) payload.EstimatedArrival.EstimatedTime else ""
+}
+
+var body_2 = payload.*Shipment default [] map {
+	(externalId: if (!isEmpty(trim(payload.MessageReceiver.Identifier))) lower(payload.MessageReceiver.Identifier) else lower(payload.MessageReceiver.Name) ) if !(isEmpty(trim(payload.PickupDate.EventTime))),
+	(identifier1: (($.Referenz default "") as Number) as String) if !(isEmpty(trim(payload.PickupDate.EventTime))),
+	(pickUpTime: payload.PickupDate.EventTime) if !(isEmpty(trim(payload.PickupDate.EventTime)))
+	
+	}
+
+
+---
+(body_1) filter $ != {}
+++
+(body_2) filter $ != {}

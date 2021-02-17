@@ -1,0 +1,44 @@
+input payload application/xlsx header=false
+output application/json
+//var dataSet = readUrl("classpath://huk_2.xls", "application/xlsx")
+var data = payload pluck $
+var payload_data = data[0]
+var current_Datetimestamp = now() >> "CST"
+
+var payload_body = payload_data default [] map  {
+	(externalId: lower(trim($[28])) as String default "") if !(isEmpty(trim($[28]))),
+	(identifier1:  
+	if ( trim((($[33] as String default "") splitBy("\/"))[0] startsWith "00"))  trim((($[33] as String default "") splitBy("\/"))[0])  else
+	("00" ++ trim((($[33] as String default "") splitBy("\/"))[0] ) as String default "")) if !(isEmpty(trim($[33]))),
+	(latitude: trim(($[26])) default "") if !(isEmpty(trim($[26]))),
+	(longitude: trim(($[27])) default "") if !(isEmpty(trim($[27]))),
+	(locatedAt: trim(($[30])) default "") if !(isEmpty(trim($[30])))
+}
+
+var eta_body = payload_data default [] map  {
+	(externalId: lower(trim($[28])) as String default "") if !(isEmpty(trim($[28]))),
+	(identifier1:  
+	if ( trim((($[33] as String default "") splitBy("\/"))[0] startsWith "00"))  trim((($[33] as String default "") splitBy("\/"))[0])  else
+	("00" ++ trim((($[33] as String default "") splitBy("\/"))[0] ) as String default "")) if !(isEmpty(trim($[33]))),
+	(estimatedArrivalAtDestination: trim(($[29])) default "") if !(isEmpty(trim($[29])))
+}
+
+var x6_body = payload_data default [] map  {
+	(externalId: lower(trim($[28])) as String default "") if !(isEmpty(trim($[26]))),
+	(identifier1:  
+	if ( trim((($[33] as String default "") splitBy("\/"))[0] startsWith "00"))  trim((($[33] as String default "") splitBy("\/"))[0])  else
+	("00" ++ trim((($[33] as String default "") splitBy("\/"))[0] ) as String default "")) if !(isEmpty(trim($[33]))),
+	(statusCode: "X6" default "") if !(isEmpty(trim($[26]))),
+	(statusDescription: "In Transit" default "") if !(isEmpty(trim($[26]))),
+	(eventTimestamp: trim(($[30])) default "") if !(isEmpty(trim($[26]))),
+}
+
+
+---
+x6_body filter $ != {}
+++
+payload_body filter $ != {}
+++
+eta_body filter $ != {}
+
+

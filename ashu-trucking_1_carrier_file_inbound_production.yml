@@ -1,0 +1,85 @@
+%dw 2.0
+import * from dw::core::Strings
+input payload application/csv header = false
+output application/json
+var headers = payload[0] pluck $$
+var csvBody = payload default [] map {
+
+        		externalId: $[0] default "",
+        		identifier1: $[2] default "",
+        		("deliveredAt": $[3] default "") if !(isEmpty(trim($[3]))) ,
+        		("pickupTime": $[7] default "") if (isEmpty(trim($[3]))),
+        		"earliestAppointmentTime": (substringBeforeLast($[4],"-") ++ "T" ++ substringBefore(substringAfterLast($[4],"-"),".") ++ ":" ++ substringBeforeLast(substringAfter($[4],"."),".") ++ ":" ++ substringAfterLast($[4],".") ++ ".000-02:00") as String default "" ,
+        		"latestAppointmentTime": (substringBeforeLast($[5],"-") ++ "T" ++ substringBefore(substringAfterLast($[5],"-"),".") ++ ":" ++ substringBeforeLast(substringAfter($[5],"."),".") ++ ":" ++ substringAfterLast($[5],".") ++ ".000-02:00") as String default "" ,
+        		("statusCode": if($[6] contains "NC00") "IO" 
+					else if($[6] contains "NC01") "IO"
+					else if($[6] contains "NC02") "IO" 
+					else if($[6] contains "NC03") "IO"
+					else if($[6] contains "NC04") "IO"
+					else if($[6] contains "NC05") "IO"
+					else if($[6] contains "NC06") "IO"
+					else if($[6] contains "NC07") "IO"
+					else if($[6] contains "NC08") "IO"
+					else if($[6] contains "NC09") "IO"
+					else if($[6] contains "NC10") "IO"
+					else "") if !(isEmpty(trim($[6]))),
+        		("statusDescription": if($[6] contains "NC00") "NC00 - Everything OK" 
+					else if($[6] contains "NC01") "NC01 - Product Damage"
+					else if($[6] contains "NC02") "NC02 - Wrong Quantity" 
+					else if($[6] contains "NC03") "NC03 - Wrong Product"
+					else if($[6] contains "NC04") "NC04 - Wrong Delivery Address"
+					else if($[6] contains "NC05") "NC05 - Customer closed"
+					else if($[6] contains "NC06") "NC06 - Customer refusal"
+					else if($[6] contains "NC07") "NC07 - Other quality complaint"
+					else if($[6] contains "NC08") "NC08 - Other quality complaint"
+					else if($[6] contains "NC09") "NC09 - Rescheduled delivery"
+					else if($[6] contains "NC10") "NC10 - Delay caused by carrier"
+					else "") if !(isEmpty(trim($[6]))),
+				("LocatedAt": now() >> "UTC") if !(isEmpty(trim($[6]))),
+        		"identifier2": $[8] default ""
+        		
+		
+}
+---
+
+(
+    [
+    		{
+        		externalId: headers[0] default "",
+        		identifier1: headers[2] default "",
+        		("deliveredAt": headers[3] default "") if !(isEmpty(trim(headers[3]))) ,
+        		("pickupTime": headers[7] default "") if (isEmpty(trim(headers[3]))),
+        		"earliestAppointmentTime": (substringBeforeLast(headers[4],"-") ++ "T" ++ substringBefore(substringAfterLast(headers[4],"-"),".") ++ ":" ++ substringBeforeLast(substringAfter(headers[4],"."),".") ++ ":" ++ substringAfterLast(headers[4],".") ++ ".000-02:00") as String default "" ,
+        		"latestAppointmentTime": (substringBeforeLast(headers[5],"-") ++ "T" ++ substringBefore(substringAfterLast(headers[5],"-"),".") ++ ":" ++ substringBeforeLast(substringAfter(headers[5],"."),".") ++ ":" ++ substringAfterLast(headers[5],".") ++ ".000-02:00") as String default "" ,
+        		("statusCode": if(headers[6] contains "NC00") "IO" 
+					else if(headers[6] contains "NC01") "IO"
+					else if(headers[6] contains "NC02") "IO" 
+					else if(headers[6] contains "NC03") "IO"
+					else if(headers[6] contains "NC04") "IO"
+					else if(headers[6] contains "NC05") "IO"
+					else if(headers[6] contains "NC06") "IO"
+					else if(headers[6] contains "NC07") "IO"
+					else if(headers[6] contains "NC08") "IO"
+					else if(headers[6] contains "NC09") "IO"
+					else if(headers[6] contains "NC10") "IO"
+					else "") if !(isEmpty(trim(headers[6]))),
+        		("statusDescription": if(headers[6] contains "NC00") "NC00 - Everything OK" 
+					else if(headers[6] contains "NC01") "NC01 - Product Damage"
+					else if(headers[6] contains "NC02") "NC02 - Wrong Quantity" 
+					else if(headers[6] contains "NC03") "NC03 - Wrong Product"
+					else if(headers[6] contains "NC04") "NC04 - Wrong Delivery Address"
+					else if(headers[6] contains "NC05") "NC05 - Customer closed"
+					else if(headers[6] contains "NC06") "NC06 - Customer refusal"
+					else if(headers[6] contains "NC07") "NC07 - Other quality complaint"
+					else if(headers[6] contains "NC08") "NC08 - Other quality complaint"
+					else if(headers[6] contains "NC09") "NC09 - Rescheduled delivery"
+					else if(headers[6] contains "NC10") "NC10 - Delay caused by carrier"
+					else "") if !(isEmpty(trim(headers[6]))),
+				("LocatedAt": now() >> "UTC") if !(isEmpty(trim(headers[6]))) ,
+        		"identifier2": headers[8] default ""
+        		
+		} 
+	] 
+	++ csvBody
+)
+	

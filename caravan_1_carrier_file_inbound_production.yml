@@ -1,0 +1,62 @@
+%dw 2.0
+output application/json
+var type_reference = payload.MercuryGate.MasterBillOfLading.*ReferenceNumbers.*ReferenceNumber.@."type"
+var pk_appt = payload.MercuryGate.MasterBillOfLading.Dates.*Pickup.*Date.@."type"
+var del_appt = payload.MercuryGate.MasterBillOfLading.Dates.*Drop.*Date.@."type"
+
+var ext_id = (type_reference as Array find "Customer Acct Number")[0]
+var id1 = (type_reference as Array find "PO Number")[0]
+var id2 = (type_reference as Array find "PRO")[0]
+var id3 = (type_reference as Array find "Shipping Order")[0]
+var phone = (type_reference as Array find "Driver Phone Number")[0]
+var truck = (type_reference as Array find "Tractor Number")[0]
+var trailer = (type_reference as Array find "Trailer Number")[0]
+var early_pk_appt = (pk_appt as Array find "earliest")[0]
+var latest_pk_appt = (pk_appt as Array find "latest")[0]
+var actual_pk_appt = (pk_appt as Array find "actual")[0]
+
+var early_del_appt = (del_appt as Array find "earliest")[0]
+var latest_del_appt = (del_appt as Array find "latest")[0]
+var actual_del_appt = (del_appt as Array find "actual")[0]
+
+var payload_body = payload.MercuryGate.*MasterBillOfLading default [] map {
+	externalId: ($.ReferenceNumbers) [ext_id] default "",
+	identifier1: ($.ReferenceNumbers) [id1] default "",
+	identifier2: ($.ReferenceNumbers) [id2] default "",
+	identifier3: ($.ReferenceNumbers) [id3] default "",
+	truckNumber: ($.ReferenceNumbers) [truck] default "",
+	trailerNumber: ($.ReferenceNumbers) [trailer] default "",
+	driverPhone: ($.ReferenceNumbers) [phone] default "",
+	operatingCarrierScac: if ( !isEmpty($.Carriers.Carrier.USDOT)) $.Carriers.Carrier.USDOT else $.Carriers.Carrier.MCNumber default ""
+	
+}
+
+var pickup_body = payload.MercuryGate.*MasterBillOfLading default [] map {
+	externalId: ($.ReferenceNumbers) [ext_id] default "",
+	identifier1: ($.ReferenceNumbers) [id1] default "",
+	identifier2: ($.ReferenceNumbers) [id2] default "",
+	identifier3: ($.ReferenceNumbers) [id3] default "",
+	earliestAppointmentTime: ($.Dates.Pickup) [early_pk_appt] default "",
+	latestAppointmentTime: ($.Dates.Pickup) [latest_pk_appt] default "",
+	identifier4: "1",
+	pickupTime: ($.Dates.Pickup) [actual_pk_appt] default ""
+	
+}
+
+var del_body = payload.MercuryGate.*MasterBillOfLading default [] map {
+	externalId: ($.ReferenceNumbers) [ext_id] default "",
+	identifier1: ($.ReferenceNumbers) [id1] default "",
+	identifier2: ($.ReferenceNumbers) [id2] default "",
+	identifier3: ($.ReferenceNumbers) [id3] default "",
+	earliestAppointmentTime: ($.Dates.Drop) [early_del_appt] default "",
+	latestAppointmentTime: ($.Dates.Drop) [latest_del_appt] default "",
+	identifier4: "2",
+	deliveredAt: if ($.Plan.Events.Event.TrackingMessages.ShipmentStatus.StatusDetails.StatusDetail.StatusCode == "D1") $.Plan.Events.Event.TrackingMessages.ShipmentStatus.StatusDetails.StatusDetail.Date else ($.Dates.Drop) [actual_del_appt] default ""
+
+	
+	
+}
+---
+payload_body filter $ != {} ++
+	del_body filter $ != {} ++
+	pickup_body filter $ != {}

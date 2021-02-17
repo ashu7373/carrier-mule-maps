@@ -1,0 +1,37 @@
+%dw 2.0
+output application/json
+
+var status = if (!isEmpty(payload.gartner_group.ShipmentStatus.COS_Details.COS_Status)) "1"
+else 0
+
+var statusCode = (payload.gartner_group.ShipmentStatus.COS_Details.COS_Status)
+var location = (payload.gartner_group.ShipmentStatus.POS_Details) 
+---
+
+[{
+    
+  externalId: lower(trim(payload.gartner_group.ShipmentStatusHeader.System_Details.Gartner_InterfaceID )) default "",
+  identifier1: trim((payload.gartner_group.ShipmentStatusHeader.Order_number splitBy("/") [0])[0]) default "",
+  identifier2: trim((payload.gartner_group.ShipmentStatusHeader.Order_number splitBy("/") [0])[1]) default "",
+  identifier3: trim((payload.gartner_group.ShipmentStatus.OrderNumber_Gartner) default "") default "",
+  (statusCode: if (trim(statusCode) == "ABB") "AF"
+ 	else if (trim(statusCode) == "ANE") "X1"
+ 	else if (trim(statusCode) == "BE") "IO"
+ 	else if (trim(statusCode) == "EE") "UL"
+ 	else if (trim(statusCode) == "ABE") "D1"
+ 	else "IO") if ((trim(status)) == "1" ),
+  (statusDescription: if (trim(statusCode == "ABB")) "Left Loading place, StatusCode: " ++ trim(statusCode)
+ 	else if (trim(statusCode == "ANE")) "Arrived at Unloading place, StatusCode: " ++ trim(statusCode)
+ 	else if (trim(statusCode == "BE")) "Start Unloading, StatusCode: " ++ trim(statusCode)
+ 	else if (trim(statusCode == "EE")) "Finished Unloading, StatusCode: " ++ trim(statusCode)
+ 	else if (trim(statusCode == "ABE")) "Left Unloading Point, StatusCode: " ++ trim(statusCode)
+ 	else "Other, StatusCode: " ++ trim(statusCode)) if ((trim(status)) == "1" ),
+  latitude: if (!isEmpty(location)) location.POS_Latitude
+  else payload.gartner_group.ShipmentStatus.COS_Details.COS_Latitude default "", 
+  longitude: if (!isEmpty(location)) location.POS_Logitude
+  else payload.gartner_group.ShipmentStatus.COS_Details.COS_Logitude default "",
+  locatedAt: if (!isEmpty(location)) location.POS_Date.POS_Year ++ "-"  ++ location.POS_Date.POS_Month ++ "-" ++ location.POS_Date.POS_Day ++ "T" ++ (location.POS_Time as String) [0 to 7]
+  else (payload.gartner_group.ShipmentStatus.COS_Details.COS_Date.COS_Year ++ "-"  ++ payload.gartner_group.ShipmentStatus.COS_Details.COS_Date.COS_Month ++ "-" ++ payload.gartner_group.ShipmentStatus.COS_Details.COS_Date.COS_Day ++ "T" ++ (payload.gartner_group.ShipmentStatus.COS_Details.COS_Time as String) [0 to 7] default ""),
+
+  (eventTimeStamp: (payload.gartner_group.ShipmentStatus.COS_Details.COS_Date.COS_Year ++ "-"  ++ payload.gartner_group.ShipmentStatus.COS_Details.COS_Date.COS_Month ++ "-" ++ payload.gartner_group.ShipmentStatus.COS_Details.COS_Date.COS_Day ++ "T" ++ (payload.gartner_group.ShipmentStatus.COS_Details.COS_Time as String) [0 to 7] default "")) if ((trim(status)) == "1" )
+}]

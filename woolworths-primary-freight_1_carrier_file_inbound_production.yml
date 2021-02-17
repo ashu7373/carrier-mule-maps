@@ -1,0 +1,21 @@
+%dw 2.0
+output application/json
+var statusUpdate = payload.Message.Body.Consignment.ConsignmentStatus
+---
+
+payload.*Message default [] map
+{
+	"externalId": $.Header.RecipientID default "",
+	"identifier1": $.Body.Consignment.ConsignmentNumber replace /^KCCH+/ with "" as String default "",
+	//"identifier2": $.Body.Consignment.ConsignmentID default "",
+	"statusCode": if(statusUpdate contains "OPEN") "IO"
+					else if(statusUpdate contains "OFFERED") "IO"
+					else if(statusUpdate contains "ASSIGNED") "IO"
+					else if(statusUpdate contains "WITHDRAWN") "IO"
+					else if(statusUpdate contains "DISPATCHED") "AF"
+					else if(statusUpdate contains "DELIVERED") "D1"
+					else "",
+	"statusDescription": statusUpdate,
+	"LocatedAt": $.Header.Timestamp default ""
+
+}

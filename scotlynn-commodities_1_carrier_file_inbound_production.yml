@@ -1,0 +1,21 @@
+%dw 2.0
+output application/json
+---
+
+payload default [] map {
+
+    externalId: lower(trim($[0])) default "",
+    identifier1: trim($[1]) default "",
+    truckNumber: trim($[3]) default "",
+    trailerNumber: trim($[4]) default "",
+    temperature: trim($[5]) default "",
+    brokeredLoad: trim($[7]) default "",
+    latitude: trim($[8]) default "",
+    longitude: trim($[9]) default "",
+    locatedAt: trim($[12]) default "",
+    city: if ((lower(trim($[0])) contains "topcvica") or (lower(trim($[0])) contains "atalelnj")) "" else trim($[11]) default "",
+    state: if ((lower(trim($[0])) contains "topcvica") or (lower(trim($[0])) contains "atalelnj")) "" else trim($[10]) default "",
+    deliveredAt: trim($[13]) default "",
+    driverPhone: if (lower(trim($[0])) contains "walmmion") "" else trim($[14]) default ""
+    
+}

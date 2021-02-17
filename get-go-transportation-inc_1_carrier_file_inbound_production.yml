@@ -1,0 +1,18 @@
+%dw 2.0
+import * from dw::core::Strings
+input payload application/csv
+output application/json
+
+---
+
+payload default [] map {
+   externalId: $.customerid default "",
+   identifier1: $.BOL3 default "",
+   identifier2: $.BOL1 default "",
+   identifier3: $.BOL2 default "",
+   (truckNumber: trim(($.tractor splitBy("\/"))[0])) if !(isEmpty(trim($.tractor))),
+   (deliveredAt: $.DeliveryDate ) if !(isEmpty(trim($.DeliveryDate))),
+   (operatingCarrierScac: trim(($.carrier_scac splitBy("\/"))[0])) if !(isEmpty(trim($.carrier_scac))),
+   (driverPhone: (trim($.phone) as String)[0 to 11] default "") if !(isEmpty($.phone))
+}
+	

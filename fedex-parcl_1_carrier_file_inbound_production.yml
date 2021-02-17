@@ -1,0 +1,15 @@
+%dw 2.0
+output application/json
+---
+ payload default [] map  {	
+	externalID: lower(trim($[2])) default "",
+	identifier1: trim($[3]) default "",
+	identifier2: trim($[28]) default "",
+	city: trim($[34]) default "",
+	state: trim($[35]) default "",
+	identifier3: trim($[52]) default "",
+	statusReasonCode: trim($[59]) default "",
+	identifier4: trim($[61]) default "",
+	eventTimeStamp: now() >> "UTC" default ""
+
+}

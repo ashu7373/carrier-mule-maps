@@ -1,0 +1,75 @@
+%dw 2.0
+output application/json
+var headers = payload[0] pluck $$
+
+var header_body = [
+	
+    		{	
+        		(externalId: lower(trim(headers[2])) default "") if !(isEmpty(trim(headers[2]))),
+        		(identifier1: trim(headers[3]) default "") if !(isEmpty(trim(headers[3]))),
+        		(locatedAt: (trim(headers[5]) as String)[0 to 3] ++ "-" ++ (trim(headers[5]) as String)[4 to 5] ++ "-" ++(trim(headers[5]) as String)[6 to 7] ++ "T" ++ (trim(headers[5]) as String)[8 to 9] ++ ":" ++ (trim(headers[5]) as String)[10 to 11]  ++ ":" ++ (trim(headers[5]) as String)[12 to 13]  default "") if !(isEmpty(trim(headers[5]))),
+        		(statusCode: if (trim(headers[7]) contains "CEV") "AF" 
+        		else if (trim(headers[7]) contains "CFM") "IO"
+        		else if (trim(headers[7]) contains "CTP") "X4"
+        		else if (trim(headers[7]) contains "ATA") "P1"
+        		else if (trim(headers[7]) contains "GEN") "D1"
+        		else "IO" default "") if !(isEmpty(trim(headers[7]))),
+        		(statusDescription: if (trim(headers[7]) contains "CEV") "Picked Up" 
+        		else if (trim(headers[7]) contains "CFM") "New Activity - Arrival at FM warehouse"
+        		else if (trim(headers[7]) contains "CTP") "Arrived At Terminal - Arrival at Crossdock (scan-in)"
+        		else if (trim(headers[7]) contains "ATA") "Departed terminal - Departure from crossdock (scan-out)"
+        		else if (trim(headers[7]) contains "GEN") "Delivered"
+        		else "IO" default "") if !(isEmpty(trim(headers[7])))
+		} 
+	] 
+  
+var header_body_location = [
+	
+    		{	
+        		(externalId: lower(trim(headers[2])) default "") ,
+        		(identifier1: trim(headers[3]) default "") if !(isEmpty(trim(headers[3]))),
+        		(locatedAt: (trim(headers[5]) as String)[0 to 3] ++ "-" ++ (trim(headers[5]) as String)[4 to 5] ++ "-" ++(trim(headers[5]) as String)[6 to 7] ++ "T" ++ (trim(headers[5]) as String)[8 to 9] ++ ":" ++ (trim(headers[5]) as String)[10 to 11]  ++ ":" ++ (trim(headers[5]) as String)[12 to 13]  default "") if !(isEmpty(trim(headers[5]))),
+        		(latitude: trim(headers[8]) default "") if !(isEmpty(trim(headers[8]))),
+                (longitude: trim(headers[9]) default "") if !(isEmpty(trim(headers[9])))
+		} 
+	] 
+	
+	
+var csvBody = payload default [] map {
+			
+			(externalId: lower(trim($[2])) default "") if !(isEmpty(trim($[2]))),
+        		(identifier1: trim($[3]) default "") if !(isEmpty(trim($[3]))),
+        		(locatedAt: (trim($[5]) as String)[0 to 3] ++ "-" ++ (trim($[5]) as String)[4 to 5] ++ "-" ++(trim($[5]) as String)[6 to 7] ++ "T" ++ (trim($[5]) as String)[8 to 9] ++ ":" ++ (trim($[5]) as String)[10 to 11]  ++ ":" ++ (trim($[5]) as String)[12 to 13]  default "") if !(isEmpty(trim($[5]))),
+        		(statusCode: if (trim($[7]) contains "CEV") "AF" 
+        		else if (trim($[7]) contains "CFM") "IO"
+        		else if (trim($[7]) contains "CTP") "X4"
+        		else if (trim($[7]) contains "ATA") "P1"
+        		else if (trim($[7]) contains "GEN") "D1"
+        		else "IO" default "") if !(isEmpty(trim($[7]))),
+        		(statusDescription: if (trim($[7]) contains "CEV") "Picked Up" 
+        		else if (trim($[7]) contains "CFM") "New Activity - Arrival at FM warehouse"
+        		else if (trim($[7]) contains "CTP") "Arrived At Terminal - Arrival at Crossdock (scan-in)"
+        		else if (trim($[7]) contains "ATA") "Departed terminal - Departure from crossdock (scan-out)"
+        		else if (trim($[7]) contains "GEN") "Delivered"
+        		else "IO" default "") if !(isEmpty(trim($[7])))
+
+}
+
+var csvBody_location = payload default [] map {
+			
+			(externalId: lower(trim($[2])) default "") ,
+        		(identifier1: trim($[3]) default "") if !(isEmpty(trim($[3]))),
+        		(locatedAt: (trim($[5]) as String)[0 to 3] ++ "-" ++ (trim($[5]) as String)[4 to 5] ++ "-" ++(trim($[5]) as String)[6 to 7] ++ "T" ++ (trim($[5]) as String)[8 to 9] ++ ":" ++ (trim($[5]) as String)[10 to 11]  ++ ":" ++ (trim($[5]) as String)[12 to 13]  default "") if !(isEmpty(trim($[5]))),
+        		(latitude: trim($[8]) default "") if !(isEmpty(trim($[8]))),
+                (longitude: trim($[9]) default "") if !(isEmpty(trim($[9])))
+
+}
+   
+---
+header_body_location
+++
+csvBody_location
+++
+header_body 
+++ 
+csvBody

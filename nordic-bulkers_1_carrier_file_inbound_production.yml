@@ -1,0 +1,29 @@
+%dw 2.0
+output application/json
+---
+[{
+  externalId: lower(payload.StatusMessage.Receiver.Identifier) default "",
+  identifier1: payload.StatusMessage.TransportId replace /^0+/ with "" as String default "",
+  statusCode: if (payload.StatusMessage.EventCode == "LOADING_ETA_TIME") "IO"
+    else if (payload.StatusMessage.EventCode == "UNLOADING_ETA_TIME") "AG"
+ 	else if (payload.StatusMessage.EventCode == "LOADING_ARRIVAL_TIME") "X3"
+ 	else if (payload.StatusMessage.EventCode == "LOADING_CHECKOUT_TIME") "AF"
+ 	else if (payload.StatusMessage.EventCode == "UNLOADING_ARRIVAL_TIME") "X1"
+ 	else if (payload.StatusMessage.EventCode == "UNLOADING_CHECKOUT_TIME") "D1"
+ 	else if (payload.StatusMessage.EventCode == "LOADING_ETA_REASON_CODE") "IO"
+ 	else if (payload.StatusMessage.EventCode == "LOADING_REASON_CODE") "L1"
+ 	else if (payload.StatusMessage.EventCode == "IM_DROP_DEPARTURE_TERMINAL_TIME") "X4"
+ 	else if (payload.StatusMessage.EventCode == "IM_DEPART_DEPARTURE_TERMINAL_TIME") "P1"
+ 	else if (payload.StatusMessage.EventCode == "IM_READY_ARRIVAL_TERMINAL_TIME") "X4"
+ 	else if (payload.StatusMessage.EventCode == "IM_PICKUP_ARRIVAL_TERMINAL_TIME") "AV"
+ 	else if (payload.StatusMessage.EventCode == "UNLOADING_ETA_REASON_CODE") "IO"
+ 	else if (payload.StatusMessage.EventCode == "UNLOADING_REASON_CODE") "CP"
+ 	else "IO",
+  statusDescription: payload.StatusMessage.EventNote,
+  (statusReasonCode: payload.StatusMessage.ReasonCode) if !(isEmpty(payload.StatusMessage.ReasonCode)),
+  (latitude: payload.StatusMessage.Latitude default "") if !(payload.StatusMessage.EventCode == "UNLOADING_ETA_TIME"), 
+  (longitude: payload.StatusMessage.Longitude default "") if !(payload.StatusMessage.EventCode == "UNLOADING_ETA_TIME"),
+  eventTimeStamp: payload.StatusMessage.EventTimestamp,
+  (locatedAt: payload.StatusMessage.EventTimestamp) if !(isEmpty(payload.StatusMessage.ReasonCode)),
+  (estimatedArrivalAtDestination: payload.StatusMessage.EventTimestamp) if (payload.StatusMessage.EventCode == "UNLOADING_ETA_TIME")
+}]

@@ -1,0 +1,107 @@
+%dw 2.0
+import * from dw::core::Strings
+input payload application/csv header = true
+output application/json 
+
+var current_Datetimestamp = now() >> "CET"
+var headers = payload[0] pluck $$
+
+
+var header_body = [
+	
+    		{	
+        		externalId: trim(headers[0]) default "",
+        		identifier1: trim(headers[2]) default "",
+        		"earliestAppointmentTime": (trim(headers[4])[0 to 3] ++ "-" ++ trim(headers[4])[4 to 5] ++ "-" ++ trim(headers[4])[6 to 7] ++ "T" ++ trim(headers[4])[8 to 9] ++ ":" ++ trim(headers[4])[10 to 11] ++ ":00+02:00") as String default "",
+        		"latestAppointmentTime": (trim(headers[5])[0 to 3] ++ "-" ++ trim(headers[5])[4 to 5] ++ "-" ++ trim(headers[5])[6 to 7] ++ "T" ++ trim(headers[5])[8 to 9] ++ ":" ++ trim(headers[5])[10 to 11] ++ ":00+02:00") as String default "",
+        		("statusCode": if(headers[6] contains "NC00") "IO" 
+					else if(headers[6] contains "NC01") "IO"
+					else if(headers[6] contains "NC02") "IO" 
+					else if(headers[6] contains "NC03") "IO"
+					else if(headers[6] contains "NC04") "IO"
+					else if(headers[6] contains "NC05") "IO"
+					else if(headers[6] contains "NC06") "IO"
+					else if(headers[6] contains "NC07") "IO"
+					else if(headers[6] contains "NC08") "IO"
+					else if(headers[6] contains "NC09") "IO"
+					else if(headers[6] contains "NC10") "IO"
+					else "") if !(isEmpty(trim(headers[6]))),
+        		("statusDescription": if(headers[6] contains "NC00") "NC00 - Everything OK" 
+					else if(headers[6] contains "NC01") "NC01 - Product Damage"
+					else if(headers[6] contains "NC02") "NC02 - Wrong Quantity" 
+					else if(headers[6] contains "NC03") "NC03 - Wrong Product"
+					else if(headers[6] contains "NC04") "NC04 - Wrong Delivery Address"
+					else if(headers[6] contains "NC05") "NC05 - Customer closed"
+					else if(headers[6] contains "NC06") "NC06 - Customer refusal"
+					else if(headers[6] contains "NC07") "NC07 - Other quality complaint"
+					else if(headers[6] contains "NC08") "NC08 - Other quality complaint"
+					else if(headers[6] contains "NC09") "NC09 - Rescheduled delivery"
+					else if(headers[6] contains "NC10") "NC10 - Delay caused by carrier"
+					else "") if !(isEmpty(trim(headers[6]))) ,
+				("LocatedAt":  current_Datetimestamp ) if !(isEmpty(trim(headers[6]))) ,
+        		"identifier2": trim(headers[8]) default ""
+        		
+		} 
+	] 
+
+var csvBody = payload default [] map {
+
+        		externalId: trim($[0]) default "",
+        		identifier1: trim($[2]) default "",
+        		"earliestAppointmentTime": (trim($[4])[0 to 3] ++ "-" ++ trim($[4])[4 to 5] ++ "-" ++ trim($[4])[6 to 7] ++ "T" ++ trim($[4])[8 to 9] ++ ":" ++ trim($[4])[10 to 11] ++ ":00+02:00") as String default "",
+        		"latestAppointmentTime": (trim($[5])[0 to 3] ++ "-" ++ trim($[5])[4 to 5] ++ "-" ++ trim($[5])[6 to 7] ++ "T" ++ trim($[5])[8 to 9] ++ ":" ++ trim($[5])[10 to 11] ++ ":00+02:00") as String default "",
+        		("statusCode": if($[6] contains "NC00") "IO" 
+					else if($[6] contains "NC01") "IO"
+					else if($[6] contains "NC02") "IO" 
+					else if($[6] contains "NC03") "IO"
+					else if($[6] contains "NC04") "IO"
+					else if($[6] contains "NC05") "IO"
+					else if($[6] contains "NC06") "IO"
+					else if($[6] contains "NC07") "IO"
+					else if($[6] contains "NC08") "IO"
+					else if($[6] contains "NC09") "IO"
+					else if($[6] contains "NC10") "IO"
+					else "") if !(isEmpty(trim($[6]))),
+        		("statusDescription": if($[6] contains "NC00") "NC00 - Everything OK" 
+					else if($[6] contains "NC01") "NC01 - Product Damage"
+					else if($[6] contains "NC02") "NC02 - Wrong Quantity" 
+					else if($[6] contains "NC03") "NC03 - Wrong Product"
+					else if($[6] contains "NC04") "NC04 - Wrong Delivery Address"
+					else if($[6] contains "NC05") "NC05 - Customer closed"
+					else if($[6] contains "NC06") "NC06 - Customer refusal"
+					else if($[6] contains "NC07") "NC07 - Other quality complaint"
+					else if($[6] contains "NC08") "NC08 - Other quality complaint"
+					else if($[6] contains "NC09") "NC09 - Rescheduled delivery"
+					else if($[6] contains "NC10") "NC10 - Delay caused by carrier"
+					else "") if !(isEmpty(trim($[6]))),
+				("LocatedAt": current_Datetimestamp) if !(isEmpty(trim($[6]))),
+        		"identifier2": trim($[8]) default ""
+        	
+}
+
+var csv_body_2 = payload default [] map {
+
+        		(externalId: trim($[0]) default "") if !(isEmpty(trim($[3]))),
+        		(identifier1: trim($[2]) default "") if !(isEmpty(trim($[3]))),
+        		(deliveryTime: (trim($[3])[0 to 3] ++ "-" ++ trim($[3])[4 to 5] ++ "-" ++ trim($[3])[6 to 7] ++ "T" ++ trim($[3])[8 to 9] ++ ":" ++ trim($[3])[10 to 11] ++ ":00+02:00") as String default "" ) if !(isEmpty(trim($[3])) or isEmpty(trim($[6])) or isEmpty(trim($[8]))),
+                (pickupTime: (trim($[3])[0 to 3] ++ "-" ++ trim($[3])[4 to 5] ++ "-" ++ trim($[3])[6 to 7] ++ "T" ++ trim($[3])[8 to 9] ++ ":" ++ trim($[3])[10 to 11] ++ ":00+02:00") as String default "" ) if ( isEmpty(trim($[6])) and isEmpty(trim($[8])))
+        	
+}
+
+var header_2 = [
+    		{
+        		(externalId: trim(headers[0]) default "") if !(isEmpty(trim(headers[3]))),
+        		(identifier1: trim(headers[2]) default "") if !(isEmpty(trim(headers[3]))),
+        		(deliveryTime: (trim(headers[3])[0 to 3] ++ "-" ++ trim(headers[3])[4 to 5] ++ "-" ++ trim(headers[3])[6 to 7] ++ "T" ++ trim(headers[3])[8 to 9] ++ ":" ++ trim(headers[3])[10 to 11] ++ ":00+02:00") as String default "") if !(isEmpty(trim(headers[3])) or isEmpty(trim(headers[6])) or isEmpty(trim(headers[8]))),
+                (pickupTime: (trim(headers[3])[0 to 3] ++ "-" ++ trim(headers[3])[4 to 5] ++ "-" ++ trim(headers[3])[6 to 7] ++ "T" ++ trim(headers[3])[8 to 9] ++ ":" ++ trim(headers[3])[10 to 11] ++ ":00+02:00") as String default "") if ( isEmpty(trim(headers[6])) and isEmpty(trim(headers[8])))
+        		    		
+		} 
+	]
+---
+
+(	header_body filter $ != {}
+	++ csvBody filter $ != {}
+	++ header_2 filter $ != {}
+	++ csv_body_2 filter $ != {}
+)
+	

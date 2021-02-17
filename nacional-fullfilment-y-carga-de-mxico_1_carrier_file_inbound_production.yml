@@ -1,0 +1,27 @@
+input payload application/xlsx header=false
+output application/json
+//var dataSet = readUrl("classpath://test_730.xlsx", "application/xlsx")
+var data = payload pluck $
+var payload_data = data[0]
+
+var current_Datetimestamp = now() >> "CST"
+
+var payload_seca  = payload_data default [] map  {
+	externalId: "seca",
+	identifier1: $[2] default "" as String ,
+    identifier2: $[5] default "" as String ,
+	identifier3:  ( "REMISION: 0" ++ (trim($[2]) as String) [0 to 2] ) default "",
+	statusCode: if ((trim($[11] default "") as String) == "LIBERADO") "D1"
+	else if ((trim($[11] default "") as String) == "ENTREGADO") "D1"
+	else if ((trim($[11] default "") as String) == "ENVIO") "AF"
+	else if ((trim($[11] default "") as String) == "TRANSITO DESTINO") "X6"
+	else "",
+	statusDescription: (trim($[11]) default "" as String) default "",
+	locatedAt: 
+	if (((trim($[11] default "") as String) == "TRANSITO DESTINO") and (isEmpty(trim($[12])))) (current_Datetimestamp default "")
+	 else (trim($[12] default "") as String) default ""
+	
+}
+
+---
+payload_seca

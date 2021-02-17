@@ -1,0 +1,35 @@
+//input payload application/csv header = false
+output application/json
+
+var plusSign = payload  groupBy ($[1]) pluck $$
+var plusSign_1 = payload  groupBy ($[1]) pluck $
+
+var csvBody = plusSign default [] map (x, index) -> {
+        "a": x as String default "",
+        "b": sizeOf(plusSign_1[index])        
+}
+
+var payload_final = payload default [] map {
+    externalId: lower(trim($[0])) default "",
+    earliestAppointmentTime: $[4] default "",
+    latestAppointmentTime: $[5] default "",
+    identifier1: $[1] default "",
+    identifier2: if (($[2] default "") == "90") (csvBody.b[((csvBody.a default [] find $[1])[0]) as Number default ""] default "" ) as String default "" else  $[2] as String default "",
+    
+    //test
+    //stopsequence: $[2] ,
+    //final_1: csvBody.b[((csvBody.a default [] find $[1])[0]) as Number default ""] default "",
+    //final: ((csvBody.a default [] find $[1])[0]) as String default ""
+    //x: csvBody.a default "",
+    //b: csvBody.b default "",
+    
+}
+
+ 
+
+
+
+---
+
+
+payload_final

@@ -1,0 +1,58 @@
+%dw 2.0
+output application/json
+
+
+var payload_indicatior_body  = payload map (x, index) -> {
+
+(externalId: lower(trim(x[0])) default "") if ( ((trim(x[4]) default "") == "LT") or ((trim(x[4]) default "") == "RL") or ((trim(x[4]) default "") == "TD") or ((trim(x[4]) default "") == "TA") ),
+(identifier1: x[1] default "") if ( ((trim(x[4]) default "") == "LT") or ((trim(x[4]) default "") == "RL") or ((trim(x[4]) default "") == "TD") or ((trim(x[4]) default "") == "TA") ),
+
+(shipmentStatusIndicator: if ( trim(x[4]) == "LT") "AL"
+else if ( trim(x[4]) == "CO") ""
+else if ( trim(x[4]) == "RL") "OA"
+else if ( trim(x[4]) == "TD") "RL"
+else if ( trim(x[4]) == "TA") "X4"
+else if ( trim(x[4]) == "DR") "I1"
+else "" default "") if ( ((trim(x[4]) default "") == "LT") or ((trim(x[4]) default "") == "RL") or ((trim(x[4]) default "") == "TD") or ((trim(x[4]) default "") == "TA") ),
+
+(eventTimeStamp: x[3] default "") if ( ((trim(x[4]) default "") == "LT") or ((trim(x[4]) default "") == "RL") or ((trim(x[4]) default "") == "TD") or ((trim(x[4]) default "") == "TA") ),
+
+(statusDescription: x[2] default "") if ( ((trim(x[4]) default "") == "LT") or ((trim(x[4]) default "") == "RL") or ((trim(x[4]) default "") == "TD") or ((trim(x[4]) default "") == "TA") ),
+
+(railEquipmentInitials: "ABCD" default "") if ( ((trim(x[4]) default "") == "LT") or ((trim(x[4]) default "") == "RL") or ((trim(x[4]) default "") == "TD") or ((trim(x[4]) default "") == "TA") ),
+
+(railEquipmentNumber: (x[1] as String) [4 to -1] default "") if ( ((trim(x[4]) default "") == "LT") or ((trim(x[4]) default "") == "RL") or ((trim(x[4]) default "") == "TD") or ((trim(x[4]) default "") == "TA") )
+//, x: x[4]
+}
+
+var payload_Code_body  = payload map (x, index) -> {
+
+(externalId: lower(trim(x[0])) default "") if !( ((trim(x[4]) default "") == "LT") or ((trim(x[4]) default "") == "RL") or ((trim(x[4]) default "") == "TD") or ((trim(x[4]) default "") == "TA") ),
+
+(identifier1: x[1] default "") if !( ((trim(x[4]) default "") == "LT") or ((trim(x[4]) default "") == "RL") or ((trim(x[4]) default "") == "TD") or ((trim(x[4]) default "") == "TA") ),
+
+(statusCode: if ( trim(x[4]) == "LT") ""
+else if ( trim(x[4]) == "CO") "AM"
+else if ( trim(x[4]) == "RL") ""
+else if ( trim(x[4]) == "TD") ""
+else if ( trim(x[4]) == "TA") ""
+else if ( trim(x[4]) == "DR") ""
+else "IO" default "") if !( ((trim(x[4]) default "") == "LT") or ((trim(x[4]) default "") == "RL") or ((trim(x[4]) default "") == "TD") or ((trim(x[4]) default "") == "TA") ),
+
+(eventTimeStamp: x[3] default "") if !( ((trim(x[4]) default "") == "LT") or ((trim(x[4]) default "") == "RL") or ((trim(x[4]) default "") == "TD") or ((trim(x[4]) default "") == "TA") ),
+
+(statusDescription: x[2] default "") if !( ((trim(x[4]) default "") == "LT") or ((trim(x[4]) default "") == "RL") or ((trim(x[4]) default "") == "TD") or ((trim(x[4]) default "") == "TA") ),
+
+(railEquipmentInitials: "ABCD" default "") if !( ((trim(x[4]) default "") == "LT") or ((trim(x[4]) default "") == "RL") or ((trim(x[4]) default "") == "TD") or ((trim(x[4]) default "") == "TA") ),
+
+(railEquipmentNumber: (x[1] as String) [4 to -1] default "") if !( ((trim(x[4]) default "") == "LT") or ((trim(x[4]) default "") == "RL") or ((trim(x[4]) default "") == "TD") or ((trim(x[4]) default "") == "TA") )
+//, x: x[4]
+}
+
+
+---
+(payload_indicatior_body) filter $ != {}
+
+++
+
+(payload_Code_body) filter $ != {}

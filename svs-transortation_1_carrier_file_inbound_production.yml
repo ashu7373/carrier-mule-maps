@@ -1,0 +1,14 @@
+%dw 2.0
+output application/json
+---
+ payload default [] map  {
+
+     externalId: lower(trim($[2])) default "",
+     identifier1: trim($[0]) default "",
+     identifier2: trim($[1]) default "",
+     truckNumber: trim($[12]) default "",
+     trailerNumber: trim($[13]) default "",
+     city: trim($[6]) default "",
+     state: trim($[7]) default "",
+     locatedAt: (trim($[8]) as String)[ 0 to 9] ++ "T" ++ (trim($[9]) as String)[11 to -1] default ""
+ }

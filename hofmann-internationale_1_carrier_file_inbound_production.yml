@@ -1,0 +1,60 @@
+%dw 2.0
+import * from dw::core::Strings
+input payload application/csv 
+output application/json skipNullOn="everywhere"
+var headers = payload[0] pluck $$
+
+var header_body =  headers default [] map {
+	a: $ default "" splitBy (";")
+}.a map {
+	externalId: lower(trim($[0])) default "",
+	identifier1: (trim($[1]) default "") replace /([\-\,\n,"\&# =;,"-",\\\\])/ with "",
+	(truckNumber: trim($[2]) default ""),
+	(trailerNumber: trim($[3]) default ""),
+    (statusCode: if (trim($[8]) default "" contains "190" ) "P1"
+    else if (trim($[8]) default "" contains "760" ) "A3"
+    else if (trim($[8]) default "" contains "770" ) "A7"
+    else if (trim($[8]) default "" contains "780" ) "A9"
+    else if (trim($[8]) default "" contains "789" ) "A7"
+    else if (trim($[8]) default "" contains "750" ) "A7"
+    else if (trim($[8]) default "" contains "55" ) "CA"
+    else if (trim($[8]) default "" contains "260" ) "AF"
+    else if (trim($[8]) default "" contains "660" ) "AF"
+    else if (trim($[8]) default "" contains "590" ) "SD"
+    else if (trim($[8]) default "" contains "410" ) "X4"
+    else if (trim($[8]) default "" contains "790" ) "D1"
+    else if (trim($[8]) default "" contains "110" ) "AA"
+    else if (trim($[8]) default "" contains "670" ) "X6"
+        else "IO"),
+    (statusDescription: trim($[9]) default ""),
+    (eventTimeStamp: (trim($[10]) as String)[0 to 3] ++ "-" ++ (trim($[10]) as String)[4 to 5] ++ "-" ++ (trim($[10]) as String)[6 to 7] ++ "T" ++ (trim($[10]) as String)[8 to 9] ++ ":" ++ (trim($[10]) as String)[10 to 11] ++ ":00" default "")
+}
+var csvBody = payload default [] map {
+        a: $[0] default "" splitBy (";")
+}.a map {
+    externalId: lower(trim($[0])) default "",
+	identifier1: (trim($[1]) default "") replace /([\-\,\n,"\&# =;,"-",\\\\])/ with "",
+	(truckNumber: trim($[2]) default ""),
+	(trailerNumber: trim($[3]) default ""),
+    (statusCode: if (trim($[8]) default "" contains "190" ) "P1"
+    else if (trim($[8]) default "" contains "760" ) "A3"
+    else if (trim($[8]) default "" contains "770" ) "A7"
+    else if (trim($[8]) default "" contains "780" ) "A9"
+    else if (trim($[8]) default "" contains "789" ) "A7"
+    else if (trim($[8]) default "" contains "750" ) "A7"
+    else if (trim($[8]) default "" contains "55" ) "CA"
+    else if (trim($[8]) default "" contains "260" ) "AF"
+    else if (trim($[8]) default "" contains "660" ) "AF"
+    else if (trim($[8]) default "" contains "590" ) "SD"
+    else if (trim($[8]) default "" contains "410" ) "X4"
+    else if (trim($[8]) default "" contains "790" ) "D1"
+    else if (trim($[8]) default "" contains "110" ) "AA"
+    else if (trim($[8]) default "" contains "670" ) "X6"
+        else "IO"),
+    (statusDescription: trim($[9]) default ""),
+    (eventTimeStamp: (trim($[10]) as String)[0 to 3] ++ "-" ++ (trim($[10]) as String)[4 to 5] ++ "-" ++ (trim($[10]) as String)[6 to 7] ++ "T" ++ (trim($[10]) as String)[8 to 9] ++ ":" ++ (trim($[10]) as String)[10 to 11] ++ ":00" default "")
+}
+---
+header_body
+++
+csvBody

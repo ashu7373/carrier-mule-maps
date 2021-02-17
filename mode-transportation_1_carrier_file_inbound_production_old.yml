@@ -1,0 +1,122 @@
+%dw 2.0
+output application/json
+var type_reference = payload.MercuryGate.ShipmentStatus.StatusDetails.StatusDetail.Location.Address.*ReferenceNumbers.*ReferenceNumber.@."type"
+
+var index_php = (type_reference as Array find "Bill To")[0] 
+var identifier_2 = (type_reference as Array find "Unique ID")[0] 
+var identifier_1 = (type_reference as Array find "Shipper Reference #")[0] 
+var identifier_3 = (type_reference as Array find "PRO")[0] 
+var pickup_apt = (type_reference as Array find "Pickup Appt Date - Time")[0] 
+var del_apt = (type_reference as Array find "Delivery Appt Date - Time")[0] 
+
+var pickup_body = payload.MercuryGate.*ShipmentStatus default [] map {
+    
+    externalId: 
+    (($.StatusDetails.StatusDetail.Location.Address.*ReferenceNumbers.*ReferenceNumber ) [index_php]) default "",
+    identifier1: "000" ++ (($.StatusDetails.StatusDetail.Location.Address.*ReferenceNumbers.*ReferenceNumber ) [identifier_1]) default "",
+    identifier2: (($.StatusDetails.StatusDetail.Location.Address.*ReferenceNumbers.*ReferenceNumber ) [identifier_2]) default "",
+    identifier3: (($.StatusDetails.StatusDetail.Location.Address.*ReferenceNumbers.*ReferenceNumber ) [identifier_3]) default "",
+    (statusCode: $.StatusDetails.StatusDetail.StatusCode) if ((($.StatusDetails.StatusDetail.Location.Address.*ReferenceNumbers.*ReferenceNumber ) [index_php]) as String contains "912253") ,
+    (statusDescription: if ($.StatusDetails.StatusDetail.StatusCode as String contains "AF") "Picked Up"
+    else if($.StatusDetails.StatusDetail.StatusCode as String contains "A3") "Load Returned"
+    else if($.StatusDetails.StatusDetail.StatusCode as String contains "A7") "Load Refused"
+    else if($.StatusDetails.StatusDetail.StatusCode as String contains "A9") "Load Damaged"
+    else if($.StatusDetails.StatusDetail.StatusCode as String contains "CA") "Load Cancelled"
+    else if($.StatusDetails.StatusDetail.StatusCode as String contains "K1") "Customs"
+    else if($.StatusDetails.StatusDetail.StatusCode as String contains "P1") "Departed Terminal"
+    else if($.StatusDetails.StatusDetail.StatusCode as String contains "SD") "Delayed"
+    else if($.StatusDetails.StatusDetail.StatusCode as String contains "X4") "Arrived At Terminal"
+    else if($.StatusDetails.StatusDetail.StatusCode as String contains "X3") "At Pickup"
+    else if($.StatusDetails.StatusDetail.StatusCode as String contains "D1") "Delivered"
+    else if($.StatusDetails.StatusDetail.StatusCode as String contains "X1") "At Consignee"
+    else if($.StatusDetails.StatusDetail.StatusCode as String contains "X2") "Delayed"
+    else if($.StatusDetails.StatusDetail.StatusCode as String contains "AA") "Pickup Scheduled"
+    else if($.StatusDetails.StatusDetail.StatusCode as String contains "AB") (if ( !(isEmpty($.StatusDetails.StatusDetail.ShipmentAppointmentReason) and ($.StatusDetails.StatusDetail.ShipmentAppointmentReason as String contains "AM")) )"Delivery Scheduled - Loaded On Truck" else "Delivery Scheduled")
+    else if($.StatusDetails.StatusDetail.StatusCode as String contains "OO") "Shipment Not Received"
+    else if($.StatusDetails.StatusDetail.StatusCode as String contains "XB") "Shipment Acknowledged"
+    else if($.StatusDetails.StatusDetail.StatusCode as String contains "CP") "Completed Loading"
+    else if($.StatusDetails.StatusDetail.StatusCode as String contains "L1") "Loading"
+    else if($.StatusDetails.StatusDetail.StatusCode as String contains "AI") "Shipment Reconsigned"
+    else if($.StatusDetails.StatusDetail.StatusCode as String contains "AM") "Loaded On Truck"
+    else if($.StatusDetails.StatusDetail.StatusCode as String contains "BA") "Cartage Pickup"
+    else if($.StatusDetails.StatusDetail.StatusCode as String contains "CL") "Trailer Closed Out"
+    else if($.StatusDetails.StatusDetail.StatusCode as String contains "J1") "Delivered To Connecting Line"
+    else if($.StatusDetails.StatusDetail.StatusCode as String contains "PR") "Customs Hold"
+    else if($.StatusDetails.StatusDetail.StatusCode as String contains "UD") "Unknown Carrier Status"
+    else if($.StatusDetails.StatusDetail.StatusCode as String contains "UL") "Unloaded"
+    else if($.StatusDetails.StatusDetail.StatusCode as String contains "X6") "In Transit"
+    else if($.StatusDetails.StatusDetail.StatusCode as String contains "AH") "Attempted Delivery"
+    else if($.StatusDetails.StatusDetail.StatusCode as String contains "AJ") "Tendered For Delivery"
+    else if($.StatusDetails.StatusDetail.StatusCode as String contains "AP") "Delivery Not Completed"
+    else if($.StatusDetails.StatusDetail.StatusCode as String contains "AV") "Available For Delivery"
+    else if($.StatusDetails.StatusDetail.StatusCode as String contains "S1") "Trailer Spotted"
+    else if($.StatusDetails.StatusDetail.StatusCode as String contains "AG") "ETA Update"
+	else "New Activity") if ((($.StatusDetails.StatusDetail.Location.Address.*ReferenceNumbers.*ReferenceNumber ) [index_php]) as String contains "912253"),
+    locatedAt: $.StatusDetails.StatusDetail.Date,
+    city: $.StatusDetails.StatusDetail.Location.Address.City default "",
+    state: $.StatusDetails.StatusDetail.Location.Address.StateProvince default "",
+    earliestAppointmentTime: (($.StatusDetails.StatusDetail.Location.Address.*ReferenceNumbers.*ReferenceNumber ) [pickup_apt]) default "",
+    latestAppointmentTime: (($.StatusDetails.StatusDetail.Location.Address.*ReferenceNumbers.*ReferenceNumber ) [pickup_apt]) default "",
+    identifier4: "1",
+
+
+}
+
+var del_body = payload.MercuryGate.*ShipmentStatus default [] map {
+    
+    externalId: 
+    (($.StatusDetails.StatusDetail.Location.Address.*ReferenceNumbers.*ReferenceNumber ) [index_php]) default "",
+    identifier1: "000" ++ (($.StatusDetails.StatusDetail.Location.Address.*ReferenceNumbers.*ReferenceNumber ) [identifier_1]) default "",
+    identifier2: (($.StatusDetails.StatusDetail.Location.Address.*ReferenceNumbers.*ReferenceNumber ) [identifier_2]) default "",
+    identifier3: (($.StatusDetails.StatusDetail.Location.Address.*ReferenceNumbers.*ReferenceNumber ) [identifier_3]) default "",
+    (statusCode: $.StatusDetails.StatusDetail.StatusCode) if ((($.StatusDetails.StatusDetail.Location.Address.*ReferenceNumbers.*ReferenceNumber ) [index_php]) as String contains "912253"),
+    (statusDescription: if ($.StatusDetails.StatusDetail.StatusCode as String contains "AF") "Picked Up"
+    else if($.StatusDetails.StatusDetail.StatusCode as String contains "A3") "Load Returned"
+    else if($.StatusDetails.StatusDetail.StatusCode as String contains "A7") "Load Refused"
+    else if($.StatusDetails.StatusDetail.StatusCode as String contains "A9") "Load Damaged"
+    else if($.StatusDetails.StatusDetail.StatusCode as String contains "CA") "Load Cancelled"
+    else if($.StatusDetails.StatusDetail.StatusCode as String contains "K1") "Customs"
+    else if($.StatusDetails.StatusDetail.StatusCode as String contains "P1") "Departed Terminal"
+    else if($.StatusDetails.StatusDetail.StatusCode as String contains "SD") "Delayed"
+    else if($.StatusDetails.StatusDetail.StatusCode as String contains "X4") "Arrived At Terminal"
+    else if($.StatusDetails.StatusDetail.StatusCode as String contains "X3") "At Pickup"
+    else if($.StatusDetails.StatusDetail.StatusCode as String contains "D1") "Delivered"
+    else if($.StatusDetails.StatusDetail.StatusCode as String contains "X1") "At Consignee"
+    else if($.StatusDetails.StatusDetail.StatusCode as String contains "X2") "Delayed"
+    else if($.StatusDetails.StatusDetail.StatusCode as String contains "AA") "Pickup Scheduled"
+    else if($.StatusDetails.StatusDetail.StatusCode as String contains "AB") (if ( !(isEmpty($.StatusDetails.StatusDetail.ShipmentAppointmentReason) and ($.StatusDetails.StatusDetail.ShipmentAppointmentReason as String contains "AM")) )"Delivery Scheduled - Loaded On Truck" else "Delivery Scheduled")
+    else if($.StatusDetails.StatusDetail.StatusCode as String contains "OO") "Shipment Not Received"
+    else if($.StatusDetails.StatusDetail.StatusCode as String contains "XB") "Shipment Acknowledged"
+    else if($.StatusDetails.StatusDetail.StatusCode as String contains "CP") "Completed Loading"
+    else if($.StatusDetails.StatusDetail.StatusCode as String contains "L1") "Loading"
+    else if($.StatusDetails.StatusDetail.StatusCode as String contains "AI") "Shipment Reconsigned"
+    else if($.StatusDetails.StatusDetail.StatusCode as String contains "AM") "Loaded On Truck"
+    else if($.StatusDetails.StatusDetail.StatusCode as String contains "BA") "Cartage Pickup"
+    else if($.StatusDetails.StatusDetail.StatusCode as String contains "CL") "Trailer Closed Out"
+    else if($.StatusDetails.StatusDetail.StatusCode as String contains "J1") "Delivered To Connecting Line"
+    else if($.StatusDetails.StatusDetail.StatusCode as String contains "PR") "Customs Hold"
+    else if($.StatusDetails.StatusDetail.StatusCode as String contains "UD") "Unknown Carrier Status"
+    else if($.StatusDetails.StatusDetail.StatusCode as String contains "UL") "Unloaded"
+    else if($.StatusDetails.StatusDetail.StatusCode as String contains "X6") "In Transit"
+    else if($.StatusDetails.StatusDetail.StatusCode as String contains "AH") "Attempted Delivery"
+    else if($.StatusDetails.StatusDetail.StatusCode as String contains "AJ") "Tendered For Delivery"
+    else if($.StatusDetails.StatusDetail.StatusCode as String contains "AP") "Delivery Not Completed"
+    else if($.StatusDetails.StatusDetail.StatusCode as String contains "AV") "Available For Delivery"
+    else if($.StatusDetails.StatusDetail.StatusCode as String contains "S1") "Trailer Spotted"
+    else if($.StatusDetails.StatusDetail.StatusCode as String contains "AG") "ETA Update"
+	else "New Activity") if ((($.StatusDetails.StatusDetail.Location.Address.*ReferenceNumbers.*ReferenceNumber ) [index_php]) as String contains "912253"),
+    locatedAt: $.StatusDetails.StatusDetail.Date,
+    city: $.StatusDetails.StatusDetail.Location.Address.City default "",
+    state: $.StatusDetails.StatusDetail.Location.Address.StateProvince default "",
+    earliestAppointmentTime: (($.StatusDetails.StatusDetail.Location.Address.*ReferenceNumbers.*ReferenceNumber ) [del_apt]) default "",
+    latestAppointmentTime: (($.StatusDetails.StatusDetail.Location.Address.*ReferenceNumbers.*ReferenceNumber ) [del_apt]) default "",
+    identifier4: "2",
+
+
+}
+
+---
+
+pickup_body
+++
+del_body

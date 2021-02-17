@@ -1,0 +1,15 @@
+%dw 2.0
+output application/json
+---
+payload  default [] map {
+
+identifier1: (if (lower(trim($[0])) contains "aleris") (trim($[1]) as String)[0 to 2] ++ "00" ++ (trim($[1]) as String) [3 to -1]
+else trim($[1])) default "" ,
+externalId: lower(trim($[0])) default "",
+truckNumber: trim($[2]) default "",
+trailerNumber: trim($[3]) default "",
+driverPhone: trim($[4]) default "",
+brokeredLoad: trim($[5]) default "",
+deliveredAt: trim($[6]) default ""
+
+}

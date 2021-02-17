@@ -1,0 +1,16 @@
+input payload application/xlsx header=true
+output application/json
+var data = payload."Inventory"
+---
+data default [] map {	
+        		externalId: if( lower(trim($[0])) contains "usa") "usa truck" else lower(trim($[0])) ,
+        		identifier1: trim($[1]) as String default "",
+        		truckNumber: trim($[2]) as String default "",
+        		latitude: $[3] default "",
+        		longitude: $[4] default "",
+        		locatedAt: $[5] default "",
+        		city: $[6] default "",
+        		State: $[7] default "",
+        		(deliveredAt: $[8] default "") if !(isEmpty(trim($[8]))) and (trim($[8]) != '-') 
+		
+}

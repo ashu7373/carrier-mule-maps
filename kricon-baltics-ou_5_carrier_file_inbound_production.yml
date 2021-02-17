@@ -1,0 +1,64 @@
+input payload application/xlsx header=true
+output application/json
+
+var test = payload pluck $
+var data = test[0]
+
+var pickup_body  = data default [] map {
+	(externalId: lower(trim($[0])) default "") if !(isEmpty(trim($[8]))),
+	(identifier1: trim($[7]) default "") if !(isEmpty(trim($[8]))),
+	(statusCode: "AF" default "") if !(isEmpty(trim($[8]))),
+	(statusDescription:  "Picked Up" default "") if !(isEmpty(trim($[8]))),
+	(locatedAt: (trim($[8]) as String) [6 to 9] ++ "-" ++ (trim($[8]) as String) [3 to 4] ++ "-" ++ (trim($[8]) as String) [0 to 1] ++ "T" ++ (trim($[8]) as String) [11 to 15] ++ ":00"  default "") if !(isEmpty(trim($[8]))),
+}
+
+var del_body  = data default [] map {
+	(externalId: lower(trim($[0])) default "") if !(isEmpty(trim($[12]))),
+	(identifier1: trim($[7]) default "") if !(isEmpty(trim($[12]))),
+	(statusCode: "D1" default "") if !(isEmpty(trim($[12]))),
+	(statusDescription:  "Delivered At: " ++ trim($[6])  default "") if !(isEmpty(trim($[12]))),
+	(locatedAt: (trim($[12]) as String) [6 to 9] ++ "-" ++ (trim($[12]) as String) [3 to 4] ++ "-" ++ (trim($[12]) as String) [0 to 1] ++ "T" ++ (trim($[12]) as String) [11 to 15] ++ ":00"  default "") if !(isEmpty(trim($[12]))),
+}
+
+var load_body  = data default [] map {
+	(externalId: lower(trim($[0])) default "") if !(isEmpty(trim($[9]))),
+	(identifier1: trim($[7]) default "") if !(isEmpty(trim($[9]))),
+	(statusCode: "L1" default "") if !(isEmpty(trim($[9]))),
+	(statusDescription:  "Loading At: " ++ trim($[3])  default "") if !(isEmpty(trim($[9]))),
+	(locatedAt: (trim($[9]) as String) [6 to 9] ++ "-" ++ (trim($[9]) as String) [3 to 4] ++ "-" ++ (trim($[9]) as String) [0 to 1] ++ "T" ++ (trim($[9]) as String) [11 to 15] ++ ":00"  default "") if !(isEmpty(trim($[9]))),
+}
+
+var dept_vessel_body  = data default [] map {
+	(externalId: lower(trim($[0])) default "") if !(isEmpty(trim($[10]))),
+	(identifier1: trim($[7]) default "") if !(isEmpty(trim($[10]))),
+	(statusCode: "IO" default "") if !(isEmpty(trim($[10]))),
+	(statusDescription:  "Vessel Departed From: " ++ trim($[4])  default "") if !(isEmpty(trim($[10]))),
+	(locatedAt: (trim($[10]) as String) [6 to 9] ++ "-" ++ (trim($[10]) as String) [3 to 4] ++ "-" ++ (trim($[10]) as String) [0 to 1] ++ "T" ++ (trim($[10]) as String) [11 to 15] ++ ":00"  default "") if !(isEmpty(trim($[10]))),
+}
+
+var arr_vessel_body  = data default [] map {
+	(externalId: lower(trim($[0])) default "") if !(isEmpty(trim($[11]))),
+	(identifier1: trim($[7]) default "") if !(isEmpty(trim($[11]))),
+	(statusCode: "IO" default "") if !(isEmpty(trim($[11]))),
+	(statusDescription:  "Vessel Arrived At: " ++ trim($[5])  default "") if !(isEmpty(trim($[11]))),
+	(locatedAt: (trim($[11]) as String) [6 to 9] ++ "-" ++ (trim($[11]) as String) [3 to 4] ++ "-" ++ (trim($[11]) as String) [0 to 1] ++ "T" ++ (trim($[11]) as String) [11 to 15] ++ ":00"  default "") if !(isEmpty(trim($[11]))),
+}
+
+var truck_body = data default [] map {
+	(externalId: lower(trim($[0])) default "") if !(isEmpty(trim($[2]))),
+	(identifier1: trim($[7]) default "") if !(isEmpty(trim($[2]))),
+	(truckNumber: trim($[2]) default "") if !(isEmpty(trim($[2])))
+	}
+---
+pickup_body filter $ != {}
+++
+load_body filter $ != {}
+++
+truck_body filter $ != {}
+++
+dept_vessel_body filter $ != {}
+++
+arr_vessel_body filter $ != {}
+++
+del_body filter $ != {}
+

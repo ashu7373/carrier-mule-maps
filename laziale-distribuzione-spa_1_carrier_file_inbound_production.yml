@@ -1,0 +1,60 @@
+%dw 2.0
+output application/json
+var csvBody = payload default [] map {
+        a: $[0] default "" splitBy (";")
+}.a map {
+    externalId: lower(trim($[0])) default "",
+	identifier1: (trim($[1]) default "") ,
+	(statusCode: if (trim($[2]) default "" contains "03901" ) "X4"
+    else if (trim($[2]) default "" contains "05902" ) "P1"
+    else if (trim($[2]) default "" contains "05734" ) "X6"
+    else if (trim($[2]) default "" contains "05735" ) "X4"
+    else if (trim($[2]) default "" contains "05964" ) "X6"
+    else if (trim($[2]) default "" contains "05901" ) "D1"
+    else "IO"),
+    (statusDescription: if (trim($[2]) default "" contains "03901" ) "Arrived at Laziale's Hub/ Terminal (Status Code:" ++ ($[2] as String) ++ ")"
+    else if (trim($[2]) default "" contains "05902" ) "Departed from Laziale's Hub/ Terminal (Status Code:" ++ ($[2] as String) ++  ")"
+    else if (trim($[2]) default "" contains "05734" ) "In transit towards terminal - Line Haul (Status Code:" ++ ($[2] as String) ++  ")"
+    else if (trim($[2]) default "" contains "05735" ) "Arrived At Terminal (Status Code:" ++ ($[2] as String) ++ ")"
+    else if (trim($[2]) default "" contains "05964" ) "In Transit - Out for Delivery (Status Code:" ++ ($[2] as String) ++ ")"
+    else if (trim($[2]) default "" contains "05901" ) "Delivered (Status Code:" ++ ($[2] as String) ++ ")"
+    else "New Activity (Status Code:" ++ ($[2] as String) ++ ")"),
+
+    (eventTimeStamp: (trim($[3]) as String)[0 to 3] ++ "-" ++ (trim($[3]) as String)[4 to 5] ++ "-" ++ (trim($[3]) as String)[6 to 7] ++ "T" ++ (trim($[3]) as String)[8 to 9] ++ ":" ++ (trim($[3]) as String)[10 to 11] ++ ":00" default "")
+}
+
+var final = csvBody default [] filter ($.identifier1 default "" contains "/") map ((load, loadIndex) ->{
+    a:{
+    externalId: load.externalId,
+    identifier1: trim( ( load.identifier1 splitBy(/[+\/]/) )[0]),
+    statusCode: load.statusCode,
+    statusDescription: load.statusDescription,
+    eventTimeStamp: load.eventTimeStamp
+}, 
+
+b: {
+    externalId: load.externalId,
+    identifier1: trim( ( load.identifier1 splitBy(/[+\/]/) )[1]),
+    statusCode: load.statusCode,
+    statusDescription: load.statusDescription,
+    eventTimeStamp: load.eventTimeStamp
+}
+
+}
+)
+
+var non_char = csvBody default [] filter (!($.identifier1 default "" contains "/")) map{
+    externalId: $.externalId,
+    identifier1: trim( $.identifier1),
+    statusCode: $.statusCode,
+    statusDescription: $.statusDescription,
+    eventTimeStamp: $.eventTimeStamp
+
+}
+
+---
+final.a default [] filter $ != {} 
+++
+final.b default [] filter $ != {} 
+++
+non_char default [] filter $ != {} 

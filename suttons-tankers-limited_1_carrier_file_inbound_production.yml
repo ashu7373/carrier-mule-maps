@@ -1,0 +1,18 @@
+%dw 2.0
+output application/json
+---
+[{  
+    externalId: payload."DSET"."tt-edi-ord"."Customer" default "",
+    identifier1: payload."DSET"."tt-edi-ord"."CusRef" default "",
+    identifier2: payload."DSET"."tt-edi-ord"."Loadno" default "",
+    identifier3: payload."DSET"."tt-edi-ord"."Import_ref" default "",
+    statusCode: if (trim(payload."DSET"."tt-edi-ord"."MessageCode") contains "4KITES_01") "AF"
+    else if (trim(payload."DSET"."tt-edi-ord"."MessageCode") contains "4KITES_02") "D1" else "IO",
+    statusDescription: 
+    if (trim(payload."DSET"."tt-edi-ord"."MessageDesc") contains "4KITES_01") payload."DSET"."tt-edi-ord"."MessageDesc" ++ ", " ++ payload."DSET"."tt-edi-ord"."LdgG4Desc"
+    else if (trim(payload."DSET"."tt-edi-ord"."MessageDesc") contains "4KITES_02") payload."DSET"."tt-edi-ord"."MessageDesc" ++ ", " ++ payload."DSET"."tt-edi-ord"."DchG4Desc"
+    else payload."DSET"."tt-edi-ord"."MessageDesc",
+    eventTimeStamp: if (trim(payload."DSET"."tt-edi-ord"."MessageCode") contains "4KITES_01") ( payload."DSET"."tt-edi-ord"."ToLdgDate" ++ "T" ++ ((payload."DSET"."tt-edi-ord"."ToLdgTime")  splitBy(".") )[0]  ++ ":" ++ ((payload."DSET"."tt-edi-ord"."ToLdgTime")  splitBy(".") )[1] ++ ":00.000")
+    else if (trim(payload."DSET"."tt-edi-ord"."MessageCode") contains "4KITES_02") ( payload."DSET"."tt-edi-ord"."ToDchdate" ++ "T" ++ ((payload."DSET"."tt-edi-ord"."ToDchtime")  splitBy(".") )[0]  ++ ":" ++ ((payload."DSET"."tt-edi-ord"."ToDchtime")  splitBy(".") )[1] ++ ":00.000") else "",
+    estimatedArrivalAtDestination: payload."DSET"."tt-edi-ord"."FrPlanDchDate" ++ "T" ++ ((payload."DSET"."tt-edi-ord"."FrPlanDchtime")  splitBy(".") )[0]  ++ ":" ++ ((payload."DSET"."tt-edi-ord"."FrPlanDchtime")  splitBy(".") )[1] ++ ":00.000"  
+}]

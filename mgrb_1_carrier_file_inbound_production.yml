@@ -1,0 +1,34 @@
+%dw 2.0
+output application/json
+
+var pickup = payload default [] map {
+
+    externalId: lower(trim($[0])) default "",
+    identifier1: trim($[1]) default "",
+    truckNumber: trim($[2]) default "",
+    trailerNumber: trim($[3]) default "",
+    latitude: trim($[5]) default "",
+    longitude: trim($[6]) default "",
+    locatedAt: trim($[7]) default "",
+    city: trim($[8]) default "",
+    state: trim($[9]) default "",
+    deliveredAt: trim($[10]) default "",
+    identifier2: trim($[11]) default "",
+    earliestAppointmentTime: (trim($[12]) as String) [0 to 9] ++ "T" ++ (trim($[13]) as String) [11 to -3] default "",
+    latestAppointmentTime: (trim($[12]) as String) [0 to 9] ++ "T" ++ (trim($[14]) as String) [11 to -3] default "",
+    identifier3: "1"
+    
+}
+
+var del = payload default [] map {
+
+    externalId: lower(trim($[0])) default "",
+    identifier1: trim($[1]) default "",
+    earliestAppointmentTime: (trim($[15]) as String) [0 to 9] ++ "T" ++ (trim($[16]) as String) [11 to -3] default "",
+    latestAppointmentTime: (trim($[15]) as String) [0 to 9] ++ "T" ++ (trim($[17]) as String) [11 to -3] default "",
+    identifier2: trim($[11]) default "",
+    identifier3: "2"
+    
+}
+---
+pickup ++ del

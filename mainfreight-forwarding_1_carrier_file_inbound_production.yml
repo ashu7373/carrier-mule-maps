@@ -1,0 +1,41 @@
+%dw 2.0
+output application/json
+var payload_body = payload.Status_Message.*Status default [] map {
+	externalId: "henkeleurope" default "",
+	identifier1: ($.Partner_Reference) default "",
+    statusCode: if ((trim(($.Status_Code default ""))) == "505") "AF"
+    else if ((trim(($.Status_Code default ""))) == "508") "AF"
+    else if ((trim(($.Status_Code default ""))) == "A12") "AF"
+    else if ((trim(($.Status_Code default ""))) == "054") "X6"
+    else if ((trim(($.Status_Code default ""))) == "138") "X1"
+    else if ((trim(($.Status_Code default ""))) == "012") "D1"
+    else if ((trim(($.Status_Code default ""))) == "091") "D1"
+     else "IO"
+    ,
+    statusDescription: if ((trim(($.Status_Code default ""))) == "505") "Consignment picked up. Departed Pickup Location"
+    else if ((trim(($.Status_Code default ""))) == "508") "Consignment loaded for a third party partner"
+    else if ((trim(($.Status_Code default ""))) == "A12") "Departed Pickup Location"
+    else if ((trim(($.Status_Code default ""))) == "054") "En Route to Delivery Location"
+    else if ((trim(($.Status_Code default ""))) == "138") "Arrived at Delivery Location"
+    else if ((trim(($.Status_Code default ""))) == "012") "Delivered"
+    else if ((trim(($.Status_Code default ""))) == "091") "Delivered"
+     else "New Activity",
+    eventTimeStamp: $.Event_DateTime default ""
+	
+}
+
+
+var del_body = payload.Status_Message.*Status default [] map {
+	externalId: "henkeleurope" default "",
+	identifier1: ($.Partner_Reference) default "",
+    deliveryTime: if ((trim(($.Status_Code default ""))) == "012") $.Event_DateTime default ""
+    else if ((trim(($.Status_Code default ""))) == "091") $.Event_DateTime default ""
+     else ""
+ 
+	
+}
+
+---
+payload_body 
+++
+del_body

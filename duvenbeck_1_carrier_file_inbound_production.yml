@@ -1,0 +1,29 @@
+%dw 2.0
+output application/json
+var headers = payload[0] pluck $$
+
+var csvBody = payload default [] map {
+        a: $[0] default "" splitBy (";")
+}.a map {
+    externalId: $[0] default "",
+    identifier1: $[1] default "",
+    latitude: $[2] default "",
+    longitude: $[3] default "",
+    locatedAt: $[4] default "",
+    deliveredAt: $[5] default "",
+    earliestAppointmentTime: $[6] default "",
+    latestAppointmentTime: $[7] default "",
+    identifier2: $[8] default "",
+    }
+    
+var eta_Body = payload default [] map {
+        a: $[0] default "" splitBy (";")
+}.a map {
+    externalId: $[0] default "",
+    identifier1: $[1] default "",
+    estimatedArrivalAtDestination: $[9] default ""
+    }
+---
+(
+		csvBody ++ eta_Body
+)

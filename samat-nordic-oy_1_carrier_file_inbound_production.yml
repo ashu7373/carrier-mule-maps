@@ -1,0 +1,27 @@
+%dw 2.0
+import * from dw::core::Strings
+input payload application/csv 
+output application/json skipNullOn="everywhere"
+
+var test = payload map (
+
+	$[0] as String default "" splitBy ";"
+
+)
+
+var t = test default [] map
+{
+	identifier1: trim((trim($[0]) splitBy("\/"))[0]) as String default "",
+	externalId: lower($[1])  default "",
+	truckNumber: trim($[2]) as String default "",
+	latitude: trim($[3]) as String default "",
+	longitude: trim($[4]) as String default "",
+	locatedAt: trim($[5]) as String default ""
+}
+
+
+---
+
+t
+
+   

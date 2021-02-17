@@ -1,0 +1,145 @@
+%dw 2.0
+output application/json
+
+//var action = payload.Message.Body.*Status.Action
+//var status_action = (type_reference as Array find "Bill To")[0]
+
+var pickup_body_1 = payload.Message.Body.*Status default [] map {
+	(externalId: lower(trim(payload.Message.Header.Client)) default "") if (($.Action default "") == "LADEN"),
+	
+	(identifier1: $.FileReference default "") if (($.Action default "") == "LADEN"),
+    (identifier3: $.Reference default "") if (($.Action default "") == "LADEN"),
+	
+	(earliestAppointmentTime: 
+		if ((!isEmpty($.ArrivalDate default ""))) (($.ArrivalDate default "") as String ++ " " ++ $.Start_Timewindow) default "" 
+		else if ((!isEmpty($.DepartureDate default "")))  (($.DepartureDate default "") as String ++ " " ++ $.Start_Timewindow) default ""
+		else ""	
+	) if (($.Action default "") == "LADEN"),
+	
+	(latestAppointmentTime: 
+		if ((!isEmpty($.ArrivalDate default ""))) (($.ArrivalDate default "") as String ++ " " ++ $.End_Timewindow) default "" 
+		else if ((!isEmpty($.DepartureDate default "")))  (($.DepartureDate default "") as String ++ " " ++ $.End_Timewindow) default ""
+		else ""	
+	) if (($.Action default "") == "LADEN"),
+	
+	(identifier2: "1" default "" ) if (($.Action default "") == "LADEN")
+		
+}
+
+var del_body_1 = payload.Message.Body.*Status default [] map {
+	(externalId: lower(trim(payload.Message.Header.Client)) default "") if (($.Action default "") == "LOSSEN"),
+	
+	(identifier1: $.FileReference default "") if (($.Action default "") == "LOSSEN"),
+
+    (identifier3: $.Reference default "") if (($.Action default "") == "LOSSEN"),
+	
+	(earliestAppointmentTime: 
+		if ((!isEmpty($.ArrivalDate default ""))) (($.ArrivalDate default "") as String ++ " " ++ $.Start_Timewindow) default "" 
+		else if ((!isEmpty($.DepartureDate default "")))  (($.DepartureDate default "") as String ++ " " ++ $.Start_Timewindow) default ""
+		else ""	
+	) if (($.Action default "") == "LOSSEN"),
+	
+	(latestAppointmentTime: 
+		if ((!isEmpty($.ArrivalDate default ""))) (($.ArrivalDate default "") as String ++ " " ++ $.End_Timewindow) default "" 
+		else if ((!isEmpty($.DepartureDate default "")))  (($.DepartureDate default "") as String ++ " " ++ $.End_Timewindow) default ""
+		else ""	
+	) if (($.Action default "") == "LOSSEN"),
+	
+	(identifier2: "2" default "" ) if (($.Action default "") == "LOSSEN")
+		
+}
+
+var pickup_body_2 = payload.Message.Body.*Status default [] map {
+	(externalId: lower(trim(payload.Message.Header.Client)) default "") if (($.Action default "") == "LADEN"),
+	
+	(identifier1: $.FileReference default "") if (($.Action default "") == "LADEN"),
+
+    (identifier3: $.Reference default "") if (($.Action default "") == "LADEN"),
+	
+	(statusCode: 
+		if ((!isEmpty($.ArrivalDate default "")) and (!isEmpty($.ArrivalTime default ""))) "X3"
+		else ""	
+	) if (($.Action default "") == "LADEN"),
+	
+	(statusDescription: 
+		"ARRIVAL AT PICKUP"	default ""
+	) if (($.Action default "") == "LADEN"),
+	
+	(eventTimeStamp: (($.ArrivalDate default "") as String ++ " " ++ $.ArrivalTime) default "" ) if (($.Action default "") == "LADEN")
+		
+}
+
+
+var pickup_body_3 = payload.Message.Body.*Status default [] map {
+	(externalId: lower(trim(payload.Message.Header.Client)) default "") if (($.Action default "") == "LADEN"),
+	
+	(identifier1: $.FileReference default "") if (($.Action default "") == "LADEN"),
+
+    (identifier3: $.Reference default "") if (($.Action default "") == "LADEN"),
+	
+	(statusCode: 
+		if ((!isEmpty($.DepartureDate default "")) and (!isEmpty($.DepartureTime default ""))) "AF"
+		else ""	
+	) if (($.Action default "") == "LADEN"),
+	
+	(statusDescription: 
+		"DEPARTURE FROM PICKUP"	default ""
+	) if (($.Action default "") == "LADEN"),
+	
+	(eventTimeStamp: (($.DepartureDate default "") as String ++ " " ++ $.DepartureTime) default "" ) if (($.Action default "") == "LADEN")
+		
+}
+
+var del_body_2 = payload.Message.Body.*Status default [] map {
+	(externalId: lower(trim(payload.Message.Header.Client)) default "") if (($.Action default "") == "LOSSEN"),
+	
+	(identifier1: $.FileReference default "") if (($.Action default "") == "LOSSEN"),
+
+    (identifier3: $.Reference default "") if (($.Action default "") == "LOSSEN"),
+	
+	(statusCode: 
+		if ((!isEmpty($.ArrivalDate default "")) and (!isEmpty($.ArrivalTime default ""))) "X1"
+		else ""	
+	) if (($.Action default "") == "LOSSEN"),
+	
+	(statusDescription: 
+		"ARRIVAL AT DELIVERY"	default ""
+	) if (($.Action default "") == "LOSSEN"),
+	
+	(eventTimeStamp: (($.ArrivalDate default "") as String ++ " " ++ $.ArrivalTime) default "" ) if (($.Action default "") == "LOSSEN")
+		
+}
+
+
+var del_body_3 = payload.Message.Body.*Status default [] map {
+	(externalId: lower(trim(payload.Message.Header.Client)) default "") if (($.Action default "") == "LOSSEN"),
+	
+	(identifier1: $.FileReference default "") if (($.Action default "") == "LOSSEN"),
+	
+    (identifier3: $.Reference default "") if (($.Action default "") == "LOSSEN"),
+
+	(statusCode: 
+		if ((!isEmpty($.DepartureDate default "")) and (!isEmpty($.DepartureTime default ""))) "D1"
+		else ""	
+	) if (($.Action default "") == "LOSSEN"),
+	
+	(statusDescription: 
+		"DELIVERED"	default ""
+	) if (($.Action default "") == "LOSSEN"),
+	
+	(eventTimeStamp: (($.DepartureDate default "") as String ++ " " ++ $.DepartureTime) default "" ) if (($.Action default "") == "LOSSEN")
+		
+}
+
+---
+(pickup_body_1) filter $ != {} ++
+
+(pickup_body_2) filter $ != {} ++
+
+(pickup_body_3) filter $ != {} ++
+
+(del_body_1) filter $ != {} ++
+
+(del_body_2) filter $ != {} ++
+
+(del_body_3) filter $ != {} 

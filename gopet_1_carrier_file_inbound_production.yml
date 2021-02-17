@@ -1,0 +1,28 @@
+input payload application/xlsx header=false
+output application/json
+//var dataSet = readUrl("classpath://gopet_1.xlsx", "application/xlsx")
+var data = payload pluck $
+var payload_data = data[0]
+
+var payload_body_1 = payload_data default [] map {
+	externalId: lower(trim($[0])) default "",
+	identifier1: ((trim($[1]) as String default "") splitBy ("/"))[0] default "",
+	truckNumber: (trim($[2])) default "",
+	trailerNumber: (trim($[3])) default ""
+	
+}
+
+var payload_body_2 = payload_data default [] map {
+	externalId: lower(trim($[0])) default "",
+	identifier1: ((trim($[1]) as String default "") splitBy ("/"))[0] default "",
+	latitude: ((trim($[4]) as Number default 0) /1000000) as String default "",
+	longitude: ((trim($[5]) as Number default 0) /1000000) as String default "",
+	(locatedAt: ((((($[6] as String default "0")  ) as Number) - 25569) * 86400) as DateTime) if (!isEmpty($[6])),
+	(deliveredAt: ((((($[7] as String default "0")  ) as Number) - 25569) * 86400) as DateTime) if (!isEmpty($[7]))
+	
+}
+---
+//[{x: (((((payload_data[0][6] as String default "")  ) as Number) - 25569) * 86400) as DateTime}]++
+payload_body_1
+++
+payload_body_2

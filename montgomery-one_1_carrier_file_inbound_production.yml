@@ -1,0 +1,20 @@
+input payload application/xlsx header=true
+output application/json
+//var dataSet = readUrl("classpath://test_683.xls", "application/xlsx")
+var data = payload pluck $
+var payload_data = data[0]
+
+var payload_body  = payload_data map (x, index) -> {
+	externalId: lower(trim(x[0])) default "",
+	identifier1: x[11] default "",
+	latitude: x[25] default "",
+	longitude: x[26] default "",
+	city: x[27] default "",
+	state: x[28] default "",
+	locatedAt: x[30] default "",
+	deliveredAt: x[32] default "",
+	brokeredLoad: if (x[13] as String contains "MGYL") "Y" else "NULL"
+	
+}
+---
+payload_body filter $ != {}

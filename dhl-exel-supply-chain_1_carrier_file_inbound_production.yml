@@ -1,0 +1,13 @@
+%dw 2.0
+output application/json
+---
+
+payload default [] map {
+
+    externalId: (trim($[0])) default "",
+    identifier1: trim($[1]) default "",
+    statusCode: "D1",
+    statusDescription: "Delivered",
+    eventTimeStamp: trim($[2]) default ""
+    
+}

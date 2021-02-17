@@ -1,0 +1,52 @@
+%dw 2.0
+import * from dw::core::Strings
+input payload application/csv 
+output application/json skipNullOn = "everywhere"
+var headers = payload[0] pluck $$
+
+var header_body =  headers default [] map {
+	a: $ default "" splitBy (";")
+}.a map {
+	externalId: lower(trim($[5])) default "",
+	identifier1: (trim($[0]) default "") replace /([\-\,\n,"\&# =;,"-",\\\\])/ with "",
+	(statusCode: if ((trim($[2]) default "") ==  "07" ) "X6"
+    else if ((trim($[2]) default "") == "07DP" ) "X4"
+    else if ((trim($[2]) default "") == "12" ) "AB"
+    else if ((trim($[2]) default "") == "14" ) "P1"
+    else if ((trim($[2]) default "") == "20" ) "D1"
+    else if ((trim($[2]) default "") == "21" ) "IO"
+    else "IO"),
+    statusDescription: if ((trim($[2]) default "") == "07" ) ("In Transit | Departed from Pick-up location")
+    else if ((trim($[2]) default "") == "07DP" ) ("Arrived at Terminal" )
+    else if ((trim($[2]) default "") == "12" ) ("Delivery Scheduled" )
+    else if ((trim($[2]) default "") == "14" ) ("Departed Terminal, Out for delivery " )
+    else if ((trim($[2]) default "") == "20" ) ("Delivered" )
+    else if ((trim($[2]) default "") == "21" ) ("Partially delivered" )
+    else ("New Activity | "++ trim($[4]) as String),
+    (eventTimeStamp: (trim($[3]) as String)[0 to 3] ++ "-" ++ (trim($[3]) as String)[4 to 5] ++ "-" ++ (trim($[3]) as String)[6 to 7] ++ "T" ++ (trim($[3]) as String)[8 to 9] ++ ":" ++ (trim($[3]) as String)[10 to 11] ++ ":00" default "")
+}
+var csvBody = payload default [] map {
+        a: $[0] default "" splitBy (";")
+}.a map {
+    externalId: lower(trim($[5])) default "",
+	identifier1: (trim($[0]) default "") replace /([\-\,\n,"\&# =;,"-",\\\\])/ with "",
+	(statusCode: if ((trim($[2]) default "" ) == "07" ) "X6"
+    else if ((trim($[2]) default "" ) == "07DP" ) "X4"
+    else if ((trim($[2]) default "" ) == "12" ) "AB"
+    else if ((trim($[2]) default "" ) == "14" ) "P1"
+    else if ((trim($[2]) default "" ) == "20" ) "D1"
+    else if ((trim($[2]) default "" ) == "21" ) "IO"
+    else "IO"),
+    statusDescription: if ((trim($[2]) default "" ) == "07" ) ("In Transit | Departed from Sinteco's Hub" )
+    else if ((trim($[2]) default "" ) == "07DP" ) ("Arrived at Terminal ")
+    else if ((trim($[2]) default "" ) == "12" ) ("Delivery Scheduled " )
+    else if ((trim($[2]) default "" ) == "14" ) ("Departed Terminal, Out for delivery " )
+    else if ((trim($[2]) default "" ) == "20" ) ("Delivered " )
+    else if ((trim($[2]) default "" ) == "21" ) ("Partially delivered")
+    else ("New Activity | "++ trim($[4]) as String),
+    (eventTimeStamp: (trim($[3]) as String)[0 to 3] ++ "-" ++ (trim($[3]) as String)[4 to 5] ++ "-" ++ (trim($[3]) as String)[6 to 7] ++ "T" ++ (trim($[3]) as String)[8 to 9] ++ ":" ++ (trim($[3]) as String)[10 to 11] ++ ":00" default "")
+}
+---
+header_body
+++
+csvBody

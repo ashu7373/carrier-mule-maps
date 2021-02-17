@@ -1,0 +1,42 @@
+%dw 2.0
+output application/json
+
+
+var csvBody = payload default [] map {
+    //d: $
+    (externalId: if ((lower(trim($[12])) != "sech56") and (lower(trim($[12])) == "sech56")) lower(trim($[12])) else lower(trim($[13])) default "") if ($[13] == "SECH56") ,
+	(identifier1: if ((lower(trim($[12])) != "sech56") and (lower(trim($[12])) == "sech56")) (trim($[0])) else (trim($[1])) default "") if ($[13] == "SECH56"),
+	(operatingCarrierScac: if ((lower(trim($[12])) != "sech56") and (lower(trim($[12])) == "sech56")) (trim($[1])) else (trim($[2])) default "") if ($[13] == "SECH56"),
+	(truckNumber: if ((lower(trim($[12])) != "sech56") and (lower(trim($[12])) == "sech56")) (trim($[2])) else (trim($[3])) default "") if ($[13] == "SECH56"),	
+	(identifier2: if ((lower(trim($[12])) != "sech56") and (lower(trim($[12])) == "sech56")) (trim($[3])) else (trim($[4])) default "") if ($[13] == "SECH56"),	
+	(latitude: if ((lower(trim($[12])) != "sech56") and (lower(trim($[12])) == "sech56")) (trim($[4])) else (trim($[5])) default "") if ($[13] == "SECH56"),
+	(longitude: if ((lower(trim($[12])) != "sech56") and (lower(trim($[12])) == "sech56")) (trim($[5])) else (trim($[6])) default "") if ($[13] == "SECH56"),
+	(locatedAt: if ((lower(trim($[12])) != "sech56") and (lower(trim($[12])) == "sech56")) (((trim($[6])) as String default "")[0 to 3] ++ "-" ++ ((trim($[6])) as String default "")[4 to 5] ++ "-" ++ ((trim($[6])) as String default "")[6 to 7]  ++ "T" ++ trim(((trim($[6])) as String default "")[9 to -1]) as String default "" ++ ":00")  else (((trim($[7])) as String default "")[0 to 3] ++ "-" ++ ((trim($[7])) as String default "")[4 to 5] ++ "-" ++ ((trim($[7])) as String default "")[6 to 7]  ++ "T" ++ trim(((trim($[7])) as String default "")[9 to -1]) as String default "" ++ ":00") default "") if ($[13] == "SECH56"),
+	(city: if ((lower(trim($[12])) != "sech56") and (lower(trim($[12])) == "sech56")) (trim($[7])) else (trim($[8])) default "") if ($[13] == "SECH56"),
+	(state: if ((lower(trim($[12])) != "sech56") and (lower(trim($[12])) == "sech56")) (trim($[8])) else (trim($[9])) default "") if ($[13] == "SECH56"),
+	(deliveredAt: if (lower(trim($[12])) != "sech56" and (lower(trim($[12])) == "sech56") and !(isEmpty(trim($[9])))) (((trim($[9])) as String default "")[0 to 3] ++ "-" ++ ((trim($[9])) as String default "")[4 to 5] ++ "-" ++ ((trim($[9])) as String default "")[6 to 7]  ++ "T" ++ trim(((trim($[9])) as String default "")[9 to -1]) as String default "" ++ ":00") 
+	 else if (lower(trim($[13])) == "sech56" and !(isEmpty(trim($[10])))) (((trim($[10])) as String default "")[0 to 3] ++ "-" ++ ((trim($[10])) as String default "")[4 to 5] ++ "-" ++ ((trim($[10])) as String default "")[6 to 7]  ++ "T" ++ trim(((trim($[10])) as String default "")[9 to -1]) as String default "" ++ ":00") default ""
+	else "") if ($[13] == "SECH56")
+}
+
+var csvBody_2 = payload default [] map {
+    //d: $
+    (externalId: if ((lower(trim($[12])) != "sech56")) lower(trim($[12])) else lower(trim($[13])) default "") if ($[12] != "SECH56") ,
+	(identifier1: if ((lower(trim($[12])) != "sech56") ) (trim($[0])) else (trim($[1])) default "") if ($[12] != "SECH56"),
+	(operatingCarrierScac: if ((lower(trim($[12])) != "sech56") ) (trim($[1])) else (trim($[2])) default "") if ($[12] != "SECH56"),
+	(truckNumber: if ((lower(trim($[12])) != "sech56") ) (trim($[2])) else (trim($[3])) default "") if ($[12] != "SECH56"),	
+	(identifier2: if ((lower(trim($[12])) != "sech56") ) (trim($[3])) else (trim($[4])) default "") if ($[12] != "SECH56"),	
+	(latitude: if ((lower(trim($[12])) != "sech56") ) (trim($[4])) else (trim($[5])) default "") if ($[12] != "SECH56"),
+	(longitude: if ((lower(trim($[12])) != "sech56") ) (trim($[5])) else (trim($[6])) default "") if ($[12] != "SECH56"),
+	(locatedAt: if ((lower(trim($[12])) != "sech56")) (((trim($[6])) as String default "")[0 to 3] ++ "-" ++ ((trim($[6])) as String default "")[4 to 5] ++ "-" ++ ((trim($[6])) as String default "")[6 to 7]  ++ "T" ++ trim(((trim($[6])) as String default "")[9 to -1]) as String default "" ++ ":00")  else (((trim($[7])) as String default "")[0 to 3] ++ "-" ++ ((trim($[7])) as String default "")[4 to 5] ++ "-" ++ ((trim($[7])) as String default "")[6 to 7]  ++ "T" ++ trim(((trim($[7])) as String default "")[9 to -1]) as String default "" ++ ":00") default "") if ($[12] != "SECH56"),
+	(city: if ((lower(trim($[12])) != "sech56") ) (trim($[7])) else (trim($[8])) default "") if ($[12] != "SECH56"),
+	(state: if ((lower(trim($[12])) != "sech56") ) (trim($[8])) else (trim($[9])) default "") if ($[12] != "SECH56"),
+	(deliveredAt: if (lower(trim($[12])) != "sech56"  and !(isEmpty(trim($[9])))) (((trim($[9])) as String default "")[0 to 3] ++ "-" ++ ((trim($[9])) as String default "")[4 to 5] ++ "-" ++ ((trim($[9])) as String default "")[6 to 7]  ++ "T" ++ trim(((trim($[9])) as String default "")[9 to -1]) as String default "" ++ ":00") 
+	 else if (lower(trim($[13])) == "sech56" and !(isEmpty(trim($[10])))) (((trim($[10])) as String default "")[0 to 3] ++ "-" ++ ((trim($[10])) as String default "")[4 to 5] ++ "-" ++ ((trim($[10])) as String default "")[6 to 7]  ++ "T" ++ trim(((trim($[10])) as String default "")[9 to -1]) as String default "" ++ ":00") default ""
+	else "") if ($[12] != "SECH56")
+}
+---
+csvBody  filter $ != {}
+++
+
+csvBody_2 filter $ != {}

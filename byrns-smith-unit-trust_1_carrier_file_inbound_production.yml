@@ -1,0 +1,52 @@
+%dw 2.0
+import * from dw::Runtime
+output application/json
+---
+
+try(
+	() -> ([{
+	externalId: "sct_nestle" default "",
+	identifier1: payload.position.CustomerPO default "",
+	city: payload.position.City default "",
+	state: payload.position.State default "",
+	shipmentStatusIndicator: if ( trim(payload.position.Status) == "02") "XB"
+	else if ( trim(payload.position.Status) == "03") "X3"
+	else if ( trim(payload.position.Status) == "035") ""
+	else if ( trim(payload.position.Status) == "04") "X6"
+	else if ( trim(payload.position.Status) == "05") "I1"
+	else if ( trim(payload.position.Status) == "06") "RL"
+	else if ( trim(payload.position.Status) == "065") "AR"
+	else if ( trim(payload.position.Status) == "07") ""
+	else if ( trim(payload.position.Status) == "08") ""
+	else if ( trim(payload.position.Status) == "085") "RD"
+	else if ( trim(payload.position.Status) == "09") "D1"
+		else "" default "",
+	statusDescription: if ( trim(payload.position.Status) == "02") "Pickup Assigned
+"
+	else if ( trim(payload.position.Status) == "03") "In Pickup Depot"
+	else if ( trim(payload.position.Status) == "035") "In Pickup Depot"
+	else if ( trim(payload.position.Status) == "04") "Road Linehaul"
+	else if ( trim(payload.position.Status) == "05") "In transit Depot"
+	else if ( trim(payload.position.Status) == "06") "Rail Linehaul"
+	else if ( trim(payload.position.Status) == "065") "At Delivery Depot"
+	else if ( trim(payload.position.Status) == "07") "Delivery Assigned"
+	else if ( trim(payload.position.Status) == "08") "Onforwarded"
+	else if ( trim(payload.position.Status) == "085") "On board for delivery"
+	else if ( trim(payload.position.Status) == "09") "Delivered"
+		else "" default "",
+	eventTimeStamp: payload.position.PositionReportTime default "",
+    railEquipmentInitials: "AU" default "",
+    railEquipmentNumber:  ((payload.position.CustomerPO) as String) [-4 to -1] default "",
+
+	latitude: payload.position.Latitude default "",
+	longitude: payload.position.Longitude default "", 
+	locatedAt: payload.position.PositionReportTime default "",
+   
+}]
+
+
+
+
+)
+)
+ orElse {}

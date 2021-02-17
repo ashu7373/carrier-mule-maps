@@ -1,0 +1,28 @@
+output application/json
+//var dataSet = readUrl("classpath://tbm_tst_1.xls", "application/xlsx")
+var data = payload pluck $
+var payload_data = data[0]
+
+var payload_body  = payload_data default [] map  {
+	externalId: lower($[0]) default "",
+	identifier1: trim((((($[3] as String default "") splitBy("LOAD#"))[1] as String default "") splitBy("-"))[0]) default "",
+	//identifier1_1: $[3] default "",
+	truckNumber: $[4] default "",
+	trailerNumber: $[5] default "",
+	startPoint: $[6] default "",
+	endPoint: $[7] default "",
+	brokeredLoad: $[12] default "",
+	statusReasonCode: $[20] default "",
+	eventTimeStamp: $[22] default "",
+	identifier2: ($[24] as Number) as String default "",
+	latitude: $[25] default "",
+	longitude: $[26] default "",
+	city : $[27] default "",
+	state: $[28] default "",
+	locatedAt: $[30] default ""
+	
+}
+
+---
+
+payload_body

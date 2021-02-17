@@ -1,0 +1,25 @@
+%dw 2.0
+input payload application/csv header = false
+output application/json 
+var headers = payload[0] pluck $$
+
+var csvBody = payload default [] map {
+        a: $[0] default "" splitBy (";")
+}.a map {
+	externalId: trim($[0]) default "",
+	identifier1: trim($[1]) default "",
+	(pickupTime: trim($[3]) default "") if (isEmpty(trim($[4]))),
+	(deliveryTime: trim($[4]) default "") if !(isEmpty(trim($[4])))
+    }
+---
+(
+	   headers default [] map {
+	a: $ default "" splitBy (";")
+}.a map {
+	externalId: trim($[0]) default "",
+	identifier1: trim($[1]) default "",
+	(pickupTime: trim($[3]) default "") if (isEmpty(trim($[4]))),
+	(deliveryTime: trim($[4]) default "") if !(isEmpty(trim($[4])))
+}
+	++	csvBody
+)

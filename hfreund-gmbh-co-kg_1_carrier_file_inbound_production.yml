@@ -1,0 +1,21 @@
+%dw 2.0
+output application/json
+---
+
+payload.ShipmentStatus.*ShipmentStatusBody default [] map {
+
+"externalId": lower(trim(payload.ShipmentStatus.Header.To.PartnerInformation.PartnerIdentifier)) default "",
+"identifier2": $.ShipmentStatusProperties.LoadTenderInformation.DocumentReference.DocumentIdentifier,
+"identifier1": $.ShipmentStatusProperties.ReferenceInformation.DocumentReference.DocumentIdentifier,
+("estimatedArrivalAtDestination": $.ShipmentStatusProperties.ConveyanceInformation.EstimatedTimeOfArrivalDate.DateTimeInformation.DateTime) if !(isEmpty($.ShipmentStatusProperties.ConveyanceInformation.EstimatedTimeOfArrivalDate.DateTimeInformation.DateTime)),
+"statusCode": if (trim($.ShipmentStatusDetails.ShipmentStatusCode) == "1") "X3"
+else if (trim($.ShipmentStatusDetails.ShipmentStatusCode) == "13") "AF"
+else if (trim($.ShipmentStatusDetails.ShipmentStatusCode) == "31") "AV"
+else if (trim($.ShipmentStatusDetails.ShipmentStatusCode) == "21") "D1"
+else if (trim($.ShipmentStatusDetails.ShipmentStatusCode) == "24") "D1"
+else "IO" ,
+"statusDescription": $.ShipmentStatusDetails.ShipmentStatusCodeDescription,
+"locatedAt": $.ShipmentStatusDetails.ShipmentStatusDateTime.DateTime,
+"eventTimeStamp": $.ShipmentStatusDetails.ShipmentStatusDateTime.DateTime
+
+}

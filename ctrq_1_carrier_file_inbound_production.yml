@@ -1,0 +1,135 @@
+%dw 2.0
+input payload application/csv header = false
+output application/json skipNullOn="everywhere"
+var headers = payload[0] pluck $$
+
+var tags_var = payload default [] map {
+	    tags: $[19],
+        tags: $[20]
+}
+
+var headers_tag_var = (
+    [
+    		{
+        tags: headers[19],
+        tags: headers[20]
+
+		} 
+	] 
+
+) 
+
+var csvBody = payload default [] map {
+        truckNumber: $[0],
+        identifier1: $[1],
+        trailerNumber: $[3],
+        latitude: $[4],
+        longitude: $[5],
+        locatedAt: $[6],
+        city: $[7],
+        state: $[8],
+        externalId: $[10],
+        identifier2: trim($[12]) ,
+        earliestAppointmentTime: $[13],
+        latestAppointmentTime: $[14],
+        statusReasonCode: $[16],
+        eventTimeStamp: $[17],
+        tags: tags_var
+        
+    }
+    
+var header_body = (
+    [
+    		{
+    			
+  		truckNumber: headers[0],
+        identifier1: headers[1],
+        trailerNumber: headers[3],
+        latitude: headers[4],
+        longitude: headers[5],
+        locatedAt: headers[6],
+        city: headers[7],
+        state: headers[8],
+        externalId: headers[10],
+        identifier2: trim(headers[12]) ,
+        earliestAppointmentTime: headers[13],
+        latestAppointmentTime: headers[14],
+        statusReasonCode: headers[16],
+        eventTimeStamp: headers[17],
+        tags: headers_tag_var
+
+		} 
+	] 
+
+)    
+
+var csv_array_part2 = csvBody map (x, index) -> {
+	(identifier1: x.identifier1) if !(isEmpty(trim(tags_var[index][1]))),
+    (externalId: x.externalId) if !(isEmpty(trim(tags_var[index][1]))),
+    (tags: tags_var[index][1]) if !(isEmpty(trim(tags_var[index][1])))
+}
+
+var csv_array = csvBody map (x, index) -> {
+	truckNumber: x.truckNumber,
+	identifier1: x.identifier1,
+    trailerNumber: x.trailerNumber,
+    latitude: x.latitude,
+    longitude: x.longitude,
+    locatedAt: x.locatedAt,
+    city: x.city,
+    state: x.state,
+    externalId: x.externalId,
+    identifier2: x.identifier2 ,
+    earliestAppointmentTime: x.earliestAppointmentTime,
+    latestAppointmentTime: x.latestAppointmentTime,
+    statusReasonCode: x.statusReasonCode,
+    eventTimeStamp: x.eventTimeStamp,
+    (tags: tags_var[index][0]) if !(isEmpty(trim(tags_var[index][0])))
+}
+
+
+
+var header_array_part1 = header_body default [] map (x, index) -> {
+	truckNumber: x.truckNumber,
+	identifier1: x.identifier1,
+    trailerNumber: x.trailerNumber,
+    latitude: x.latitude,
+    longitude: x.longitude,
+    locatedAt: x.locatedAt,
+    city: x.city,
+    state: x.state,
+    externalId: x.externalId,
+    identifier2: x.identifier2 ,
+    earliestAppointmentTime: x.earliestAppointmentTime,
+    latestAppointmentTime: x.latestAppointmentTime,
+    statusReasonCode: x.statusReasonCode,
+    eventTimeStamp: x.eventTimeStamp,
+    (tags: headers_tag_var[0][0]) if !(isEmpty(trim(headers_tag_var[0][0]))) 
+
+}
+
+var header_array_part2 = header_body default [] map (x, index) -> {
+	(identifier1: x.identifier1) if !(isEmpty(trim(headers_tag_var[0][1]))),
+    (externalId: x.externalId) if !(isEmpty(trim(headers_tag_var[0][1]))),
+    (tags: headers_tag_var[0][1]) if !(isEmpty(trim(headers_tag_var[0][1]))) 
+
+}
+
+
+---
+
+header_array_part1  filter $ != {}
+
+++
+
+header_array_part2 filter $ != {}
+
+++
+
+csv_array  filter $ != {}
+
+++
+
+csv_array_part2  filter $ != {}
+
+

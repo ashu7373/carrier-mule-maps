@@ -1,0 +1,39 @@
+%dw 2.0
+output application/json
+var identifier_reference = payload.transportStatusNotificationMessage.transportStatusNotification.transportStatusNotificationShipment.*transportReference.*transportReferenceTypeCode
+var index_php = identifier_reference as Array find "PHP"
+var status_path = payload.transportStatusNotificationMessage.transportStatusNotification.transportStatusNotificationShipment.transportStatus.transportStatusConditionCode
+var body_1 = payload.*transportStatusNotificationMessage
+
+
+ default [] map {
+	
+	externalId: 
+    
+if  (!isEmpty(trim(lower(trim($.transportStatusNotification.transportStatusRequestor.additionalPartyIdentification))))) lower(trim($.transportStatusNotification.transportStatusRequestor.additionalPartyIdentification)) default ""
+   else "fourkites",
+	
+	(identifier1: $.transportStatusNotification.transportStatusNotificationShipment.*additionalShipmentIdentification[($.transportStatusNotification.transportStatusNotificationShipment.*additionalShipmentIdentification.@additionalShipmentIdentificationTypeCode as Array find "refopd")[0]]  default ""),
+    identifier2: $.transportStatusNotification.transportStatusNotificationIdentification.entityIdentification default "",
+	(identifier3: $.transportStatusNotification.transportStatusNotificationShipment.*transportReference.*entityIdentification[index_php[0]] default "") if !(isEmpty(index_php[0])),
+	statusCode: if (status_path == "400300") "X1"
+				else if (status_path == "802X01") "X4"
+				else if (status_path == "ETAU") "AG"
+				else if (status_path == "802X02") "X6"
+				else if (status_path == "800D01") "AV"
+				else if (status_path == "200150") "D1"
+				else "IO",
+	statusDescription: if (status_path == "400300") "At Consignee"
+				else if (status_path == "802X01") "Arrived At Terminal"
+				else if (status_path == "ETAU") "ETA Update"
+				else if (status_path == "802X02") "In Transit"
+				else if (status_path == "800D01") "Available For Delivery"
+				else if (status_path == "200150") "Delivered"
+				else "New Activity",
+	locatedAt: $.transportStatusNotification.transportStatusNotificationShipment.transportStatus.transportStatusDateTime default "",
+	(estimatedArrivalAtDestination: $.transportStatusNotification.transportStatusNotificationShipment.transportStatus.*transportStatusDescription[($.transportStatusNotification.transportStatusNotificationShipment.transportStatus.*transportStatusDescription.@noteTypeCode as Array find "status")[0]] default "") if (!(isEmpty($.transportStatusNotification.transportStatusNotificationShipment.transportStatus.transportStatusDescription)) and  status_path == "ETAU" )
+}
+
+---
+
+body_1

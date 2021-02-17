@@ -1,0 +1,16 @@
+%dw 2.0
+output application/json
+var payload_body  = payload map (x, index) -> {
+
+externalId: lower(trim(x[2])) default "",
+identifier1: if ( lower(trim(x[2])) != "whir1760") x[3] else "-" ++ x[3] as String default "",
+identifier2: x[4] default "",
+identifier3: x[5] default "",
+truckNumber: x[6] default "",
+railEquipmentInitials: x[8] default "",
+railEquipmentNumber: x[9] default "",
+deliveredAt: x[11] default "",
+identifier4: x[16] default ""
+}
+---
+payload_body

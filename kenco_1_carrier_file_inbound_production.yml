@@ -1,0 +1,68 @@
+%dw 2.0
+output application/json
+var type_reference = payload.MercuryGate.ShipmentStatus.StatusDetails.StatusDetail.Shipments.Shipment.*ReferenceNumbers.*ReferenceNumber.@."type"
+
+var pk_appt = payload.MercuryGate.ShipmentStatus.StatusDetails.StatusDetail.Shipments.Shipment.Dates.*Pickup.*Date.@."type"
+var del_appt = payload.MercuryGate.ShipmentStatus.StatusDetails.StatusDetail.Shipments.Shipment.Dates.*Drop.*Date.@."type"
+var ext_id = (type_reference as Array find "Customer Acct Number")[0] default ""
+var identifier1 = (type_reference as Array find "EDI Import Primary Reference")[0] default ""
+var trailer = (type_reference as Array find "Trailer Number")[0] default ""
+var lat = payload.MercuryGate.ShipmentStatus.StatusDetails.StatusDetail.*Event.Address.GeoLoc.@ default ""
+var latitude = ((lat as Array default []) [0] default [])[0] default ""
+var longitude = ((lat as Array default []) [0] default [] )[2] default ""
+
+var early_pk_appt = (pk_appt as Array default [] find "earliest")[0] default ""
+var latest_pk_appt = (pk_appt as Array default [] find "latest")[0] default ""
+var actual_pk_appt = (pk_appt as Array default [] find "actual")[0] default ""
+
+var early_del_appt = (del_appt as Array default [] find "earliest")[0] default ""
+var latest_del_appt = (del_appt as Array default [] find "latest")[0] default ""
+var actual_del_appt = (del_appt as Array default [] find "actual")[0] default ""
+
+var trailer_body = payload.MercuryGate.ShipmentStatus.StatusDetails.*StatusDetail.*Shipments default [] map {
+	externalId: lower(($.Shipment.ReferenceNumbers) [ext_id]) default "",
+	identifier1: (($.Shipment.ReferenceNumbers) [identifier1]) default "",
+	trailerNumber: (($.Shipment.ReferenceNumbers) [trailer]) default ""	
+}
+
+var payload_body = payload.MercuryGate.ShipmentStatus.StatusDetails.*StatusDetail default [] map {
+	externalId: lower(($.Shipments.Shipment.ReferenceNumbers) [ext_id]) default "",
+	identifier1: (($.Shipments.Shipment.ReferenceNumbers) [identifier1]) default "",
+	latitude: ((latitude default "") as Number / 1000000.0  ) as String default "",
+	longitude: "-" ++ ((longitude default "") as Number / 1000000.0  ) as String default "",
+	locatedAt: $.Date  default "",
+	city: $.Location.Address.City default "",
+	state: $.Location.Address.StateProvince default ""
+}
+
+var deliveredAt_body = payload.MercuryGate.ShipmentStatus.StatusDetails.*StatusDetail default [] map {
+	externalId: lower(($.Shipments.Shipment.ReferenceNumbers) [ext_id]) default "",
+	identifier1: (($.Shipments.Shipment.ReferenceNumbers) [identifier1]) default "",
+	deliveredAt: if ( (($.StatusCode as String) default "") == "D1") $.Date default ""
+	else ($.Shipments.Shipment.Dates.Drop) [actual_del_appt] default "",	
+	earliestAppointmentTime: ($.Shipments.Shipment.Dates.Drop) [early_del_appt] default "",
+	latestAppointmentTime: ($.Shipments.Shipment.Dates.Drop) [latest_del_appt] default "",
+	identifier4: "2"
+	
+}
+
+
+var pk_body = payload.MercuryGate.ShipmentStatus.StatusDetails.*StatusDetail default [] map {
+	externalId: lower(($.Shipments.Shipment.ReferenceNumbers) [ext_id]) default "",
+	identifier1: (($.Shipments.Shipment.ReferenceNumbers) [identifier1]) default "",
+	earliestAppointmentTime: ($.Shipments.Shipment.Dates.Pickup) [early_pk_appt] default "",
+	latestAppointmentTime: ($.Shipments.Shipment.Dates.Pickup) [latest_pk_appt] default "",
+	identifier4: "1"
+}
+---
+trailer_body
+
+++
+
+payload_body
+
+++
+pk_body
+++
+
+deliveredAt_body

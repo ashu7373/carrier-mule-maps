@@ -1,0 +1,22 @@
+input payload application/xlsx header=false
+output application/json
+//var dataSet = readUrl("classpath://test_820.xlsx", "application/xlsx")
+var data = payload  pluck $
+var payload_data = data[0]
+
+var pickup_body = payload_data default [] map  {
+	(externalId: lower(trim($[0])) as String default "") if !(isEmpty(trim($[0]))),
+	(identifier1: trim(($[1]) default "")) if !(isEmpty(trim($[1]))),
+	(pickupTime: trim(($[3])) default "") if !(isEmpty(trim($[3])))
+}
+
+var del_body = payload_data default [] map  {
+	(externalId: lower(trim($[0])) as String default "") if !(isEmpty(trim($[0]))),
+	(identifier1: trim(($[1]) default "")) if !(isEmpty(trim($[1]))),
+	(deliveredAt: trim(($[5])) default "") if !(isEmpty(trim($[5])))
+}
+
+---
+pickup_body filter $ != {}
+++
+del_body filter $ != {}

@@ -1,0 +1,16 @@
+input payload application/xlsx header=true
+output application/json
+//var dataSet = readUrl("classpath://test_soar.xlsx", "application/xlsx")
+var data = payload pluck $
+var payload_data = data[0]
+
+var payload_body  = payload_data map (x, index) -> {
+	externalId: lower(trim(x[0])) default "",
+	identifier1: x[1] default "",
+	identifier2: x[2] default "",
+	identifier3: x[7] default "",
+	earliestAppointmentTime: ((x[5] default "") as String)[0 to 12] ++ ":" ++ ((x[5] default "") as String)[13 to 14] default "",
+	latestAppointmentTime: ((x[6] default "") as String)[0 to 12] ++ ":" ++ ((x[6] default "") as String)[13 to 14] default ""
+}
+---
+payload_body filter $ != {}

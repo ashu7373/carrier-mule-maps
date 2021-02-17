@@ -1,0 +1,39 @@
+%dw 2.0
+import * from dw::Runtime
+output application/json
+
+---
+try(() -> ([	{
+    externalId: lower(trim(payload.situation_justification.attributes.groupedClientCode)) default "",
+    identifier1: (trim(payload.situation_justification.attributes.orderRef)) default "",
+    locatedAt: ((payload.situation.date)) default "",
+    latitude: (trim(payload.situation_justification.position.lat)) default "",
+    longitude: (trim(payload.situation_justification.position.lng)) default "",
+}]) filter $ != {}
+++
+
+([	{
+    (externalId: lower(trim(payload.situation_justification.attributes.groupedClientCode)) default "") if ((payload.situation.event default "") == "ETA_EVENT"),
+    (identifier1: (trim(payload.situation_justification.attributes.orderRef)) default "") if ((payload.situation.event default "") == "ETA_EVENT"),
+      (estimatedArrivalAtDestination: payload.order.eta default "") if ((payload.situation.event default "") == "ETA_EVENT"),
+     
+}]) filter $ != {}
+
+++
+([	{
+    (externalId: lower(trim(payload.situation_justification.attributes.groupedClientCode)) default "") if ((payload.situation.event default "") == "CON_UNLOAD"),
+    (identifier1: (trim(payload.situation_justification.attributes.orderRef)) default "") if ((payload.situation.event default "") == "CON_UNLOAD"),
+      (deliveredAt: payload.situation.date default "") if ((payload.situation.event default "") == "CON_UNLOAD"),
+     
+}]) filter $ != {}
+
+++ 
+([	{
+    externalId: lower(trim(payload.situation_justification.attributes.groupedClientCode)) default "",
+    identifier1: (trim(payload.situation_justification.attributes.orderRef)) default "",
+    truckNumber: payload.situation_justification.attributes.truck default "",
+    trailerNumber: payload.situation_justification.attributes.trailer default ""
+     
+}]) filter $ != {}
+
+) orElse {}

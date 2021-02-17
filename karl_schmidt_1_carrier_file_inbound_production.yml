@@ -1,0 +1,143 @@
+%dw 2.0
+import * from dw::core::Arrays
+import * from dw::core::Strings
+
+output application/json
+
+var event_time = (payload.ShipmentStatus.ShipmentStatusBody.ShipmentStatusProperties.LoadTenderInformation.DocumentReference.DateTime) default ""
+
+var timestamp = payload.ShipmentStatus.ShipmentStatusBody.ShipmentStatusDetails.ShipmentStatusDateTime.DateTime
+var isLocation = payload.ShipmentStatus.ShipmentStatusBody.*ShipmentStatusProperties.*SpecialInstructions default [] indexWhere (i) -> i startsWith "Lng"
+var statusCodePath = payload.ShipmentStatus.ShipmentStatusBody.ShipmentStatusDetails.ShipmentStatusCode
+var locationCheck =
+	if (isLocation == -1)
+		"status"
+	else
+		"location"
+		
+var body_1 = payload.ShipmentStatus.ShipmentStatusBody.*ShipmentStatusProperties default [] map {
+
+		("externalId": lower(payload.ShipmentStatus.Header.To.PartnerInformation.PartnerIdentifier) default "") if (!isEmpty(event_time)),
+		(identifier1: payload.ShipmentStatus.ShipmentStatusBody.ShipmentStatusProperties.LoadTenderInformation.DocumentReference.DocumentIdentifier replace /^0+/ with "" as String default "") if (!isEmpty(event_time)),
+		(statusCode: (if (statusCodePath == "13") "AF" else if
+						(statusCodePath == "77") "A7"  else if
+						(statusCodePath == "18") "A9" else if
+            (statusCodePath == "218") "A9" else if
+            (statusCodePath == "307") "A9" else if
+						(statusCodePath == "275") "CA" else if
+            (statusCodePath == "324") "CA" else if
+						(statusCodePath == "12") "K1" else if
+            (statusCodePath == "126") "K1" else if
+            (statusCodePath == "128") "K1" else if
+            (statusCodePath == "170") "K1" else if
+						(statusCodePath == "127") "P1" else if
+						(statusCodePath == "25") "SD" else if
+            (statusCodePath == "20") "SD" else if
+            (statusCodePath == "101") "SD" else if
+            (statusCodePath == "270") "SD" else if
+            (statusCodePath == "271") "SD" else if
+            (statusCodePath == "272") "SD" else if
+            (statusCodePath == "273") "SD" else if
+            (statusCodePath == "314") "SD" else if
+						(statusCodePath == "40") "X4" else if
+            (statusCodePath == "1") "X4" else if
+            (statusCodePath == "45") "X4" else if
+            (statusCodePath == "206") "X4" else if
+						(statusCodePath == "53") "X3" else if
+            (statusCodePath == "64") "X3" else if
+            (statusCodePath == "338") "X3" else if
+            (statusCodePath == "339") "X3" else if
+            (statusCodePath == "340") "X3" else if
+            (statusCodePath == "341") "X3" else if
+						(statusCodePath == "21") "D1" else if
+            (statusCodePath == "22") "D1" else if
+						(statusCodePath == "112") "X1" else if
+						(statusCodePath == "339") "AA" else if
+            (statusCodePath == "344") "AA" else if
+						(statusCodePath == "113") "AB" else if
+						(statusCodePath == "300") "OO" else if
+						(statusCodePath == "72") "XB" else if
+						(statusCodePath == "51") "CP" else if
+						(statusCodePath == "2") "L1" else if
+            (statusCodePath == "132") "L1" else if
+            (statusCodePath == "143") "L1" else if
+            (statusCodePath == "159") "L1" else if
+            (statusCodePath == "160") "L1" else if
+            (statusCodePath == "161") "L1" else if
+						(statusCodePath == "48") "AM" else if
+						(statusCodePath == "242") "IO" else if
+						(statusCodePath == "42") "J1" else if
+						(statusCodePath == "248") "UD" else if
+            (statusCodePath == "265") "UD" else if
+            (statusCodePath == "125") "UD" else if
+            (statusCodePath == "243") "UD" else if
+						(statusCodePath == "28") "UL" else if
+            (statusCodePath == "29") "UL" else if
+            (statusCodePath == "135") "UL" else if
+            (statusCodePath == "136") "UL" else if
+            (statusCodePath == "162") "UL" else if
+            (statusCodePath == "163") "UL" else if
+            (statusCodePath == "164") "UL" else if
+            (statusCodePath == "346") "UL" else if
+						(statusCodePath == "31") "X6" else if
+						(statusCodePath == "104") "AP" else if
+            (statusCodePath == "105") "AP" else if
+            (statusCodePath == "106") "AP" else if
+            (statusCodePath == "109") "AP" else if
+            (statusCodePath == "110") "AP" else if
+            (statusCodePath == "207") "AP" else if
+            (statusCodePath == "210") "AP" else if
+            (statusCodePath == "227") "AP" else if
+            (statusCodePath == "269") "AP" else if
+            (statusCodePath == "275") "AP" else if
+            (statusCodePath == "276") "AP" else if
+            (statusCodePath == "277") "AP" else if
+            (statusCodePath == "278") "AP" else if
+            (statusCodePath == "279") "AP" else if
+            (statusCodePath == "280") "AP" else if
+            (statusCodePath == "281") "AP" else if
+            (statusCodePath == "282") "AP" else if
+            (statusCodePath == "283") "AP" else if
+            (statusCodePath == "284") "AP" else if
+            (statusCodePath == "285") "AP" else if
+            (statusCodePath == "286") "AP" else if
+            (statusCodePath == "291") "AP" else if
+            (statusCodePath == "292") "AP"
+						else statusCodePath )) if (!isEmpty(event_time)) ,
+
+        
+        (statusDescription: 
+         (payload.ShipmentStatus.ShipmentStatusBody.ShipmentStatusDetails.ShipmentStatusCodeDescription)
+        default "") if (!isEmpty(event_time)),
+        
+        (statusReasonCode: if (locationCheck == "status")
+        (
+        	substringAfter(payload.ShipmentStatus.ShipmentStatusBody.*ShipmentStatusProperties.*SpecialInstructions[0], ":") default "" ++
+        	substringAfter(payload.ShipmentStatus.ShipmentStatusBody.*ShipmentStatusProperties.*SpecialInstructions[1], ":") default "" ++
+        	substringAfter(payload.ShipmentStatus.ShipmentStatusBody.*ShipmentStatusProperties.*SpecialInstructions[2], ":") default "" ++
+        	substringAfter(payload.ShipmentStatus.ShipmentStatusBody.*ShipmentStatusProperties.*SpecialInstructions[3], ":") default "" ++
+        	substringAfter(payload.ShipmentStatus.ShipmentStatusBody.*ShipmentStatusProperties.*SpecialInstructions[4], ":") default "" ++
+        	substringAfter(payload.ShipmentStatus.ShipmentStatusBody.*ShipmentStatusProperties.*SpecialInstructions[5], ":") default "" ++
+        	substringAfter(payload.ShipmentStatus.ShipmentStatusBody.*ShipmentStatusProperties.*SpecialInstructions[6], ":") default ""
+        )
+        else "") if (!isEmpty(event_time)),
+
+ 		(eventTimeStamp:  (payload.ShipmentStatus.ShipmentStatusBody.ShipmentStatusProperties.LoadTenderInformation.DocumentReference.DateTime) default "") if (!isEmpty(event_time))
+	}
+	
+var body_2 = payload.ShipmentStatus.ShipmentStatusBody.*ShipmentStatusProperties default [] map {
+
+		("externalId": lower(payload.ShipmentStatus.Header.To.PartnerInformation.PartnerIdentifier) default "") if (locationCheck == "location") ,
+		(identifier1: payload.ShipmentStatus.ShipmentStatusBody.ShipmentStatusProperties.LoadTenderInformation.DocumentReference.DocumentIdentifier replace /^0+/ with "" as String default "")if (locationCheck == "location"),
+		(latitude: substringAfter($.*SpecialInstructions[1], ":") default "")if (locationCheck == "location"),
+		(longitude: substringAfter($.*SpecialInstructions[0], ":") default "")if (locationCheck == "location"),
+ 		(locatedAt: payload.ShipmentStatus.ShipmentStatusBody.ShipmentStatusDetails.ShipmentStatusDateTime.DateTime default "")if (locationCheck == "location"),
+ 		
+	}
+
+---
+
+(body_1) filter $ != {}
+++
+(body_2) filter $ != {}
+	
